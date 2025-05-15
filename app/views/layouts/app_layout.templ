@@ -1,0 +1,12 @@
+package layouts
+
+import "camping/app/views/components"
+
+templ App(content templ.Component) {
+	@BaseLayout() {
+		@components.Navigation()
+		<div id="main-content" class="max-w-7xl mx-auto">
+			@content
+		</div>
+	}
+}

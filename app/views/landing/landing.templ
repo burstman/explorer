@@ -1,0 +1,36 @@
+package landing
+
+templ Index() {
+	<div
+		x-data="carousel()"
+		x-init="start()"
+		class="relative w-[900px] h-[600px] mx-auto overflow-hidden rounded-lg mt-12"
+	>
+		<!-- Slides -->
+		<div
+			class="flex transition-transform duration-700 ease-in-out"
+			:style="`transform: translateX(-${currentIndex * 100}%);`"
+		>
+			<template x-for="image in images" :key="image">
+				<img
+					:src="image"
+					class="w-[900px] h-[600px] flex-shrink-0 object-cover"
+					alt="Carousel Image"
+				/>
+			</template>
+		</div>
+		<!-- Indicators -->
+		<div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+			<template x-for="(image, index) in images" :key="index">
+				<div
+					class="w-3 h-3 rounded-full cursor-pointer"
+					:class="{
+						'bg-white': currentIndex === index,
+						'bg-gray-400': currentIndex !== index
+					}"
+					@click="goTo(index)"
+				></div>
+			</template>
+		</div>
+	</div>
+}
