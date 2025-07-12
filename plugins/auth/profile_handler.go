@@ -1,7 +1,9 @@
 package auth
 
 import (
-	"camping/app/db"
+	"explorer/app/db"
+	"explorer/app/handlers"
+	"explorer/app/types"
 	"fmt"
 
 	"github.com/anthdm/superkit/kit"
@@ -22,7 +24,7 @@ type ProfileFormValues struct {
 }
 
 func HandleProfileShow(kit *kit.Kit) error {
-	auth := kit.Auth().(Auth)
+	auth := kit.Auth().(types.AuthUser)
 
 	var user User
 	if err := db.Get().First(&user, auth.UserID).Error; err != nil {
@@ -36,7 +38,7 @@ func HandleProfileShow(kit *kit.Kit) error {
 		Email:     user.Email,
 	}
 
-	return kit.Render(ProfileShow(formValues))
+	return handlers.RenderWithLayout(kit, ProfileShow(formValues))
 }
 
 func HandleProfileUpdate(kit *kit.Kit) error {
@@ -46,7 +48,7 @@ func HandleProfileUpdate(kit *kit.Kit) error {
 		return kit.Render(ProfileForm(values, errors))
 	}
 
-	auth := kit.Auth().(Auth)
+	auth := kit.Auth().(types.AuthUser)
 	if auth.UserID != values.ID {
 		return fmt.Errorf("unauthorized request for profile %d", values.ID)
 	}

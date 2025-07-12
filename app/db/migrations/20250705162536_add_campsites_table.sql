@@ -1,0 +1,16 @@
+-- +goose Up
+CREATE TABLE campsites (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    location TEXT,
+    available_from DATE,
+    available_to DATE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);
+
+-- +goose Down
+DROP TABLE IF EXISTS campsites;

@@ -1,0 +1,141 @@
+package landing
+
+import (
+	"explorer/app/types"
+	"explorer/plugins/campsite"
+	"strconv"
+)
+
+func getFlashStyle(flashType string) string {
+	if flashType == "success" {
+		return "bg-green-600"
+	}
+	return "bg-red-600"
+}
+
+templ CampSites(role string, camps []types.CampSite, flashType, flashMsg string) {
+	<div
+		x-data="{ show: true }"
+		x-init="setTimeout(() => show = false, 4000)"
+		x-show="show"
+		x-transition
+		class={ "fixed bottom-6 right-6 z-50 text-white px-4 py-3 rounded shadow-lg " + getFlashStyle(flashType) }
+	>
+		<div class="flex justify-between items-center gap-4">
+			<span>{ flashMsg }</span>
+			<button @click="show = false" class="text-white font-bold">✕</button>
+		</div>
+	</div>
+	<section x-data="{ open: false, mode: 'add' }" class="relative min-h-screen">
+		<!-- Background -->
+		<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+			<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+		</div>
+		<!-- Content -->
+		<div class="relative z-10 flex flex-col items-center justify-center px-6 pt-20">
+			<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Campsites</h1>
+			<!-- Add Button -->
+			if role == "admin" || role == "superuser" {
+				<button
+					@click="open = true; mode = 'add'; $nextTick(() => document.getElementById('modal-inner').innerHTML = '')"
+					class="mb-6 px-4 py-2 text-sm font-medium bg-white text-green-900 rounded-md hover:bg-green-100 transition"
+				>
+					➕ Add New Campsite
+				</button>
+			}
+			<!-- Cards -->
+			<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl w-full">
+				for _, camp := range camps {
+					@campCard(camp, role)
+				}
+			</div>
+		</div>
+		<!-- Modal Wrapper -->
+		<div
+			x-show="open"
+			x-transition
+			x-cloak
+			class="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+			style="backdrop-filter: blur(4px);"
+		>
+			<!-- Modal Container -->
+			<div class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg relative" id="modal">
+				<!-- Close Button -->
+				<button @click="open = false" class="absolute top-2 right-2 text-gray-600 hover:text-black text-lg">✕</button>
+				<!-- Add Mode Inline -->
+				<div x-show="mode === 'add'">
+					<h2 class="text-xl font-bold mb-4 text-green-900">Add New Campsite</h2>
+					@campsite.NewCampsiteForm()
+				</div>
+				<!-- Edit Mode -->
+				<!-- HTMX will replace this part -->
+				<div id="modal-inner"></div>
+			</div>
+		</div>
+	</section>
+}
+
+templ campCard(camp types.CampSite, role string) {
+	<div class="bg-white rounded-xl shadow-md overflow-hidden transition transform hover:scale-105">
+		<img src={ camp.ImageURL } alt="Campsite" class="w-full h-48 object-cover"/>
+		<div class="p-4">
+			<h2 class="text-xl font-bold text-green-900">{ camp.Name }</h2>
+			<p class="text-sm text-gray-700 mt-1">{ camp.Description }</p>
+			<p class="text-xs text-gray-500 mt-2">{ camp.Location }</p>
+			<p class="text-xs text-gray-500 mt-2">
+				Available from: { templ.EscapeString(func() string {
+				if camp.AvailableFrom != nil {
+					return camp.AvailableFrom.Format("January 2, 2006")
+				}
+				return ""
+			}()) }
+			</p>
+			<p class="text-xs text-gray-500 mt-2">
+				Available to: { templ.EscapeString(func() string {
+				if camp.AvailableTo != nil {
+					return camp.AvailableTo.Format("January 2, 2006")
+				}
+				return ""
+			}()) }
+			</p>
+			if role == "admin" || role == "superuser" {
+				<!-- Action Buttons: Edit and Delete -->
+				<div class="flex justify-between items-center mt-4">
+					<!-- Edit Button -->
+					<button
+						@click="open = true; mode = 'edit'"
+						hx-get={ "/admin/campsites/edit/" + strconv.Itoa(camp.ID) }
+						hx-target="#modal-inner"
+						hx-swap="innerHTML"
+						class="text-green-800 hover:underline text-sm"
+					>
+						✏️ Edit
+					</button>
+					<!-- Delete Button -->
+					<form
+						method="POST"
+						action={ "/admin/campsites/delete/" + strconv.Itoa(camp.ID) }
+						onsubmit="return confirm('Are you sure you want to delete this campsite?');"
+					>
+						<button type="submit" class="text-red-700 hover:underline text-sm">
+							🗑️ Delete
+						</button>
+					</form>
+				</div>
+			}
+			if role == "user" {
+				<!-- Booking Button -->
+				<div class="mt-4 text-right">
+					<form method="GET" action={ "/booking/campsite/" + strconv.Itoa(camp.ID) }>
+						<button
+							type="submit"
+							class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
+						>
+							🎟️ Book Now
+						</button>
+					</form>
+				</div>
+			}
+		</div>
+	</div>
+}

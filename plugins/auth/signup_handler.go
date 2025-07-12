@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"camping/app/db"
+	"explorer/app/db"
 	"fmt"
 	"net/http"
 	"os"
@@ -58,6 +58,9 @@ func HandleSignupCreate(kit *kit.Kit) error {
 	return kit.Render(ConfirmEmail(user))
 }
 
+// HandleResendVerificationCode handles the process of resending an email verification token for a user.
+// It retrieves the user by ID, checks if the email is already verified, generates a new verification token,
+// and emits an event to resend the verification email. Returns an appropriate status message.
 func HandleResendVerificationCode(kit *kit.Kit) error {
 	idstr := kit.FormValue("userID")
 	id, err := strconv.Atoi(idstr)

@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"camping/app/views/layouts"
+	"explorer/app/types"
+	"explorer/app/views/layouts"
 	"fmt"
-	"log"
 
 	"github.com/a-h/templ"
 	"github.com/anthdm/superkit/kit"
@@ -14,11 +14,22 @@ import (
 // the content within the standard application layout.
 func RenderWithLayout(kit *kit.Kit, content templ.Component) error {
 	isHTMX := kit.Request.Header.Get("HX-Request") == "true"
-	fmt.Println(isHTMX)
+
 	if isHTMX {
-		log.Println("HTMX request")
 		return kit.Render(content)
 	}
-	log.Println("Not HTMX request")
-	return kit.Render(layouts.App(content))
+	isLoggedIn := kit.Auth().Check()
+	var role string
+	
+	if isLoggedIn {
+		// Get the authenticated user and extract the role
+		if user,ok := kit.Auth().(types.AuthUser); ok {
+			role = user.GetRole()
+		}
+	}
+	fmt.Println("role in render with layout", role)
+	fmt.Println("is loggedin", isLoggedIn)
+	
+
+	return kit.Render(layouts.App(content, role, isLoggedIn))
 }

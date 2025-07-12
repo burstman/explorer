@@ -1,8 +1,8 @@
 package app
 
 import (
-	"camping/app/events"
-	"camping/plugins/auth"
+	"explorer/app/events"
+	"explorer/plugins/auth"
 	"log"
 
 	"github.com/anthdm/superkit/event"

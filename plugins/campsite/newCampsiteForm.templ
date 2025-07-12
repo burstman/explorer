@@ -1,0 +1,54 @@
+package campsite
+
+import (
+	"explorer/app/types"
+	"strconv"
+)
+
+templ NewCampsiteForm(buses []types.BuseType) {
+	<form method="POST" action="/admin/campsites/create" class="space-y-4">
+		<label for="name" class="block text-sm font-medium text-gray-700">Camp Name</label>
+		<input type="text" name="name" placeholder="Name" class="w-full border rounded p-2"/>
+		<label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+		<textarea name="description" placeholder="Description" class="w-full border rounded p-2"></textarea>
+		<label for="image_url" class="block text-sm font-medium text-gray-700">Image URL</label>
+		<input type="text" name="image_url" placeholder="Image URL" class="w-full border rounded p-2"/>
+		<label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+		<input type="text" name="location" placeholder="Location" class="w-full border rounded p-2"/>
+		<div x-data="{ from: '', to: '' }" class="space-y-4">
+			<!-- Available From -->
+			<label for="available_from" class="block text-sm font-medium text-gray-700">Available From</label>
+			<input
+				type="date"
+				id="available_from"
+				name="available_from"
+				x-model="from"
+				placeholder="mm/dd/yyyy"
+				class="w-full border border-gray-300 rounded-lg p-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-500"
+			/>
+			<!-- Available To -->
+			<label for="available_to" class="block text-sm font-medium text-gray-900">Available To</label>
+			<input
+				type="date"
+				id="available_to"
+				name="available_to"
+				x-model="to"
+				:min="from"
+				placeholder="Select end date"
+				class="w-full border border-gray-300 rounded-lg p-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-500"
+			/>
+		</div>
+		<div>
+			<h3 class="text-sm font-medium text-gray-700 mb-2">Assign Buses</h3>
+			<div class="space-y-2">
+				for _, bus := range buses {
+					<label class="flex items-center space-x-2">
+						<input type="checkbox" name="bus_ids" value={ strconv.Itoa(bus.ID) } class="text-green-600"/>
+						<span class="text-gray-800">{ bus.Name } ({ bus.Capacity } seats)</span>
+					</label>
+				}
+			</div>
+		</div>
+		<button type="submit" class="bg-green-900 text-white px-4 py-2 rounded hover:bg-green-800">Add Campsite</button>
+	</form>
+}

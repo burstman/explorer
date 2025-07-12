@@ -6,18 +6,22 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func Send(to, subject, body string) error {
+// SendHTML sends an email with both plain text and HTML content.
+func SendHTML(to, subject, plainText, htmlBody string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", os.Getenv("SMTP_SENDER")) // e.g. "test@yourapp.com"
+	m.SetHeader("From", os.Getenv("SMTP_SENDER"))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/plain", body)
+
+	// Set both plain and HTML versions
+	m.SetBody("text/plain", plainText)
+	m.AddAlternative("text/html", htmlBody)
 
 	d := gomail.NewDialer(
-		os.Getenv("SMTP_HOST"),     // e.g. smtp.mailtrap.io
-		587,                        // Port
-		os.Getenv("SMTP_USER"),     // username from Mailtrap
-		os.Getenv("SMTP_PASSWORD"), // password from Mailtrap
+		os.Getenv("SMTP_HOST"),
+		587,
+		os.Getenv("SMTP_USER"),
+		os.Getenv("SMTP_PASSWORD"),
 	)
 
 	return d.DialAndSend(m)

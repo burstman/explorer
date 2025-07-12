@@ -1,15 +1,21 @@
 package main
 
 import (
-	"camping/app/db"
-	"camping/plugins/auth"
+	"database/sql"
+	"explorer/app/db"
+	"explorer/plugins/auth"
 	"log"
 	"time"
 
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
+	err:=godotenv.Load()
+	if err != nil {
+		log.Fatalf("failed to load .env file: %v", err)
+	}
 	database := db.Get() // or your actual DB connection method
 
 	password := "admin1234"
@@ -18,14 +24,19 @@ func main() {
 		log.Fatalf("failed to hash password: %v", err)
 	}
 
+	now := time.Now()
 	admin := auth.User{
 		Email:        "admin@camping.tn",
 		PasswordHash: string(hashedPassword),
 		FirstName:    "Hamrouni",
 		LastName:     "Foued",
 		Role:         "admin",
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		EmailVerifiedAt: sql.NullTime{
+			Time: now,
+			Valid: true,
+		},
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
 	result := database.Create(&admin)

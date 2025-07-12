@@ -6,44 +6,68 @@ import (
 )
 
 templ ProfileShow(formValues ProfileFormValues) {
-	//@layouts.App() {
-	<div class="mt-32 flex flex-col gap-12">
-		<div class="flex flex-col gap-2">
-			<h1 class="text-4xl">Welcome, <span class="font-medium">{ formValues.FirstName } { formValues.LastName }</span></h1>
-			<div class="flex gap-4">
-				<a href="/" class="text-sm underline">back to home</a>
-				<button hx-delete="/logout" class="text-sm underline">sign me out</button>
+	<section class="relative min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+		<!-- Centered Profile Card -->
+		<div class="relative z-10 flex justify-center px-4 pt-20">
+			<div class="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-8 shadow-lg ">
+				<div class="flex flex-col gap-4 text-center">
+					<h1 class="text-4xl font-semibold text-white">
+						Welcome, <span class="text-green-400">{ formValues.FirstName } { formValues.LastName }</span>
+					</h1>
+					<div class="flex justify-center gap-4 text-sm text-white/70">
+						//<a href="/" class="underline hover:text-white">back to home</a>
+						//<button hx-delete="/logout" class="underline hover:text-white">sign me out</button>
+					</div>
+				</div>
+				<div class="flex flex-col gap-2 text-center mb-8">
+					@ProfileForm(formValues, v.Errors{})
+				</div>
 			</div>
 		</div>
-		@ProfileForm(formValues, v.Errors{})
-	</div>
-	//}
+	</section>
 }
 
 templ ProfileForm(values ProfileFormValues, errors v.Errors) {
-	<form hx-put="/profile" class="w-full max-w-sm flex flex-col gap-6">
+	<form hx-put="/profile" class="flex flex-col gap-5 mt-15">
 		<input type="hidden" name="id" value={ fmt.Sprint(values.ID) }/>
 		<div class="flex flex-col gap-2">
-			<label for="firstName">First Name</label>
-			<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
+			<label for="firstName" class="text-white text-sm">First Name</label>
+			<input
+				{ inputAttrs(errors.Has("firstName"))... }
+				class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+				name="firstName"
+				id="firstName"
+				value={ values.FirstName }
+			/>
 			if errors.Has("firstName") {
 				<div class="text-red-500 text-xs">{ errors.Get("firstName")[0] }</div>
 			}
 		</div>
 		<div class="flex flex-col gap-2">
-			<label for="lastName">Last Name</label>
-			<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
+			<label for="lastName" class="text-white text-sm">Last Name</label>
+			<input
+				{ inputAttrs(errors.Has("lastName"))... }
+				class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+				name="lastName"
+				id="lastName"
+				value={ values.LastName }
+			/>
 			if errors.Has("lastName") {
 				<div class="text-red-500 text-xs">{ errors.Get("lastName")[0] }</div>
 			}
 		</div>
 		<div class="flex flex-col gap-2">
-			<label for="email">Email</label>
-			<div { inputAttrs(false)... }>{ values.Email }</div>
+			<label for="email" class="text-white text-sm">Email</label>
+			<div class="bg-white/10 text-white px-4 py-2 rounded-lg border border-white/20">{ values.Email }</div>
 		</div>
-		<button { buttonAttrs()... }>Update profile</button>
+		<button
+			{ buttonAttrs()... }
+			class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition"
+		>
+			Update profile
+		</button>
 		if len(values.Success) > 0 {
-			<div>{ values.Success }</div>
+			<div class="text-green-400 text-sm text-center mt-2">{ values.Success }</div>
 		}
 	</form>
 }

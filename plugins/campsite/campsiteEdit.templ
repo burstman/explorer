@@ -1,0 +1,76 @@
+package campsite
+
+import (
+	"explorer/app/types"
+	"strconv"
+)
+
+templ EditCampsiteForm(camp types.CampSite) {
+	<form method="POST" action={ "/admin/campsites/edit/" + strconv.Itoa(camp.ID) } class="space-y-4">
+		<h2 class="text-xl font-bold mb-4 text-green-900">Edit Campsite</h2>
+		<label for="name" class="block text-sm font-medium text-gray-700">Camp Name</label>
+		<input
+			type="text"
+			name="name"
+			placeholder="Name"
+			value={ camp.Name }
+			class="w-full border border-gray-300 bg-white text-gray-900 rounded p-2"
+		/>
+		<label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+		<textarea
+			name="description"
+			placeholder="Description"
+			class="w-full border border-gray-300 bg-white text-gray-900 rounded p-2"
+		>{ camp.Description }</textarea>
+		<label for="image_url" class="block text-sm font-medium text-gray-700">Image URL</label>
+		<input
+			type="text"
+			name="image_url"
+			placeholder="Image URL"
+			value={ camp.ImageURL }
+			class="w-full border border-gray-300 bg-white text-gray-900 rounded p-2"
+		/>
+		<label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+		<input
+			type="text"
+			name="location"
+			placeholder="Location"
+			value={ camp.Location }
+			class="w-full border border-gray-300 bg-white text-gray-900 rounded p-2"
+		/>
+		<div x-data="{ from: '', to: '' }" class="space-y-4">
+			<!-- Available From -->
+			<label for="available_from" class="block text-sm font-medium text-gray-700">Available From</label>
+			<input
+				type="date"
+				name="available_from"
+				value={ templ.EscapeString(func() string {
+				if camp.AvailableFrom != nil {
+					return camp.AvailableFrom.Format("2006-01-02")
+				}
+				return ""
+			}()) }
+				class="w-full border rounded p-2 text-gray-900 placeholder-gray-500"
+			/>
+			<!-- Available To -->
+			<label for="available_to" class="block text-sm font-medium text-gray-900">Available To</label>
+			<input
+				type="date"
+				name="available_to"
+				value={ templ.EscapeString(func() string {
+				if camp.AvailableTo != nil {
+					return camp.AvailableTo.Format("2006-01-02")
+				}
+				return ""
+			}()) }
+				class="w-full border rounded p-2 text-gray-900 placeholder-gray-500"
+			/>
+		</div>
+		<button
+			type="submit"
+			class="bg-green-900 text-white px-4 py-2 rounded hover:bg-green-800"
+		>
+			Update Campsite
+		</button>
+	</form>
+}

@@ -1,8 +1,11 @@
 package auth
 
 import (
-	"camping/app/db"
 	"database/sql"
+	"explorer/app/db"
+	"explorer/app/handlers"
+	"explorer/app/types"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -31,7 +34,7 @@ func HandleLoginIndex(kit *kit.Kit) error {
 		redirectURL := kit.Getenv("SUPERKIT_AUTH_REDIRECT_AFTER_LOGIN", "/profile")
 		return kit.Redirect(http.StatusSeeOther, redirectURL)
 	}
-	return kit.Render(LoginIndex(LoginIndexPageData{}))
+	return handlers.RenderWithLayout(kit, LoginIndex(LoginIndexPageData{}))
 }
 
 // HandleLoginCreate processes user login by validating credentials, checking email verification,
@@ -85,7 +88,7 @@ func HandleLoginCreate(kit *kit.Kit) error {
 	sess := kit.GetSession(userSessionName)
 	sess.Values["sessionToken"] = session.Token
 	sess.Save(kit.Request, kit.Response)
-	redirectURL := kit.Getenv("SUPERKIT_AUTH_REDIRECT_AFTER_LOGIN", "/profile")
+	redirectURL := kit.Getenv("SUPERKIT_AUTH_REDIRECT_AFTER_LOGIN", "/AreaAttraction")
 
 	return kit.Redirect(http.StatusSeeOther, redirectURL)
 }
@@ -152,6 +155,7 @@ func AuthenticateUser(kit *kit.Kit) (kit.Auth, error) {
 	auth := Auth{}
 	sess := kit.GetSession(userSessionName)
 	token, ok := sess.Values["sessionToken"]
+	fmt.Println("token", token)
 	if !ok {
 		return auth, nil
 	}
@@ -163,10 +167,12 @@ func AuthenticateUser(kit *kit.Kit) (kit.Auth, error) {
 	if err != nil || session.ID == 0 {
 		return auth, nil
 	}
+	fmt.Println(session.User.Role)
 
-	return Auth{
+	return types.AuthUser{
 		LoggedIn: true,
 		UserID:   session.User.ID,
 		Email:    session.User.Email,
+		Role:     session.User.Role,
 	}, nil
 }

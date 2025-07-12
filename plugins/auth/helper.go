@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"camping/app/mailer"
+	"explorer/app/mailer"
 	"fmt"
 	"os"
 	"strconv"
@@ -27,5 +27,6 @@ func SendVerificationEmail(email, token string) error {
 	url := fmt.Sprintf("%s/verify?token=%s", os.Getenv("APP_BASE_URL"), token)
 	subject := "Verify your email address"
 	body := fmt.Sprintf("Welcome!\n\nPlease verify your email by clicking this link:\n\n%s", url)
-	return mailer.Send(email, subject, body)
+	return mailer.SendHTML(email, subject, body, body)
 }
+

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"camping/app"
-	"camping/public"
+	"explorer/app"
+	"explorer/public"
 	"fmt"
 	"log"
 	"net/http"

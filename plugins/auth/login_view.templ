@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"camping/app/views/layouts"
+	"explorer/app/views/layouts"
 	v "github.com/anthdm/superkit/validate"
 )
 
@@ -17,33 +17,49 @@ type LoginFormValues struct {
 
 templ LoginIndex(data LoginIndexPageData) {
 	@layouts.BaseLayout() {
-		// <div class="fixed top-6 right-6">
-		// 	@components.ThemeSwitcher()
-		// </div>
-		<div class="w-full justify-center gap-10">
-			<div class="mt-10 lg:mt-40">
-				<div class="max-w-sm mx-auto border rounded-md shadow-sm py-12 px-8 flex flex-col gap-8">
-					<h2 class="text-center text-2xl font-medium">Login to Explorer</h2>
+		<section class="relative min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+
+		//<section class="relative h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1512253965851-b72114c0f7dd?auto=format&fit=crop&w=2000&q=80')">
+		//<section class="relative h-screen bg-red-500">
+	
+			<!-- Overlay -->
+			<div class="absolute inset-0 bg-black/60"></div>
+
+			<!-- Centered Login Card -->
+			<div class="relative z-10 flex justify-center px-4 pt-20">
+				<div class="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-8 shadow-lg flex flex-col gap-8">
+					<h2 class="text-center text-2xl font-semibold text-white">Login to Explorer</h2>
 					@LoginForm(data.FormValues, data.FormErrors)
-					<a class="text-sm underline hover:text-white transition-colors duration-200 cursor-pointer" hx-get="/signup" hx-target="#main-content" hx-swap="innerHTML">Don't have an account? Signup here.</a>
+					<a class="text-sm text-center underline text-white/70 hover:text-white transition duration-200"
+					    hx-get="/signup"
+					    hx-target="#main-content"
+					    hx-swap="innerHTML">
+						Don't have an account? Signup here.
+					</a>
 				</div>
 			</div>
-		</div>
+		</section>
 	}
 }
 
 templ LoginForm(values LoginFormValues, errors v.Errors) {
-	<form hx-post="/login" class="flex flex-col gap-4">
-		<div class="flex flex-col gap-1">
-			<label for="email">Email *</label>
-			<input { inputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }/>
+	<form hx-post="/login" class="flex flex-col gap-5">
+		<div class="flex flex-col gap-2">
+			<label for="email" class="text-sm text-white">Email *</label>
+			<input { inputAttrs(errors.Has("email"))... }
+					name="email" id="email" value={ values.Email }
+			        class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"/>
 			if errors.Has("email") {
 				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
 		</div>
-		<div class="flex flex-col gap-1">
-			<label for="password">Password *</label>
-			<input { inputAttrs(errors.Has("password"))... } type="password" name="password" id="password"/>
+
+		<div class="flex flex-col gap-2">
+			<label for="password" class="text-sm text-white">Password *</label>
+			<input { inputAttrs(errors.Has("password"))... }
+			        type="password" name="password" id="password"
+			        class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"/>
+
 			if errors.Has("password") {
 				<ul class="list-disc ml-4">
 					for _, err := range errors.Get("password") {
@@ -58,11 +74,14 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("verified")[0] }</div>
 			}
 		</div>
-		<button { buttonAttrs()... }>
+
+		<button { buttonAttrs()... }
+		        class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition">
 			Login
 		</button>
 	</form>
 }
+
 
 func buttonAttrs() templ.Attributes {
 	class := "inline-flex text-primary-foreground items-center justify-center px-4 py-2 font-medium text-sm tracking-wide transition-colors duration-200 rounded-md bg-primary text-foreground hover:bg-primary/90 focus:ring focus:ring-primary focus:shadow-outline focus:outline-none"

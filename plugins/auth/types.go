@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"camping/app/db"
 	"database/sql"
+	"explorer/app/db"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -23,14 +23,26 @@ type UserWithVerificationToken struct {
 }
 
 type Auth struct {
-	UserID   uint
-	Email    string
-	LoggedIn bool
+	UserID    uint
+	Email     string
+	LoggedIn  bool
+	FirstName string
+	Role string
 }
 
 func (auth Auth) Check() bool {
 	return auth.LoggedIn
 }
+
+func (user Auth) HasRole(role string) bool {
+	return user.Role == role
+}
+
+func (user Auth) IsAmin() bool {
+	return user.Role == "admin"
+}
+
+
 
 type User struct {
 	gorm.Model
@@ -45,6 +57,9 @@ type User struct {
 	UpdatedAt       time.Time
 }
 
+// createUserFromFormValues creates a new User from signup form values, hashing the password
+// and persisting the user record to the database. It returns the created User and any error
+// encountered during password hashing or database insertion.
 func createUserFromFormValues(values SignupFormValues) (User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(values.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -54,6 +69,7 @@ func createUserFromFormValues(values SignupFormValues) (User, error) {
 		Email:        values.Email,
 		FirstName:    values.FirstName,
 		LastName:     values.LastName,
+		Role:         "user",
 		PasswordHash: string(hash),
 	}
 	result := db.Get().Create(&user)
@@ -71,3 +87,4 @@ type Session struct {
 	CreatedAt time.Time
 	User      User
 }
+

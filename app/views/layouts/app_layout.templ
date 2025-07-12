@@ -1,12 +1,35 @@
 package layouts
 
-import "camping/app/views/components"
+import "explorer/app/views/components"
 
-templ App(content templ.Component) {
+templ App(content templ.Component, role string, isLoggedIn bool) {
 	@BaseLayout() {
-		@components.Navigation()
-		<div id="main-content" class="max-w-7xl mx-auto">
-			@content
+		<!-- Global Alpine scope for modal -->
+		<div
+			x-data="{ modalOpen: false }"
+			x-on:close-modal.window="modalOpen = false"
+			x-cloak
+			class="relative"
+		>
+			@components.Navigation(role, isLoggedIn)
+			<!-- Modal HTML -->
+			<div
+				x-show="modalOpen"
+				x-transition
+				@keydown.escape.window="modalOpen = false"
+				class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+				style="backdrop-filter: blur(4px);"
+			>
+				<div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl relative" id="bus-modal-content">
+					<button @click="modalOpen = false" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-lg font-bold">✖</button>
+					<!-- Injected content will go here -->
+					<!-- Add close button if needed -->
+				</div>
+			</div>
+			<!-- Main Content -->
+			<div id="main-content" class="w-full">
+				@content
+			</div>
 		</div>
 	}
 }

@@ -1,9 +1,11 @@
 package app
 
 import (
-	"camping/app/handlers"
-	"camping/app/views/errors"
-	"camping/plugins/auth"
+	"explorer/app/handlers"
+	"explorer/app/views/errors"
+	"explorer/plugins/auth"
+	buses "explorer/plugins/busesConfig"
+	"explorer/plugins/campsite"
 	"log/slog"
 
 	"github.com/anthdm/superkit/kit"
@@ -32,6 +34,10 @@ func InitializeRoutes(router *chi.Mux) {
 	//      RedirectURL: "/login",
 	//  }
 	auth.InitializeRoutes(router)
+	// authConfig := kit.AuthenticationConfig{
+	// 	AuthFunc:    auth.AuthenticateUser,
+	// 	RedirectURL: "/login",
+	// }
 	authConfig := kit.AuthenticationConfig{
 		AuthFunc:    auth.AuthenticateUser,
 		RedirectURL: "/login",
@@ -44,6 +50,10 @@ func InitializeRoutes(router *chi.Mux) {
 		// Routes
 		app.Get("/", kit.Handler(handlers.HandleLandingIndex))
 		app.Get("/about", kit.Handler(handlers.HandleLandingAbout))
+		app.Get("/help", kit.Handler(handlers.HandleHelp))
+		app.Get("/photo+view", kit.Handler(handlers.HandlePhotoView))
+		app.Get("/AreaAttraction", kit.Handler(handlers.HandleCampSites))
+		app.Get("/book-new", kit.Handler(handlers.HandleBookNew))
 	})
 
 	// Authenticated routes
@@ -53,6 +63,17 @@ func InitializeRoutes(router *chi.Mux) {
 	// AuthenticationConfig.
 	router.Group(func(app chi.Router) {
 		app.Use(kit.WithAuthentication(authConfig, true)) // strict set to true
+
+		app.Get("/admin/campsites/new", kit.Handler(campsite.HandleCampsiteNewForm))
+		app.Get("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteEditForm))
+		app.Get("/admin/buses", kit.Handler(buses.HandleModal))
+
+		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
+		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
+		app.Post("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteUpdate))
+
+		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
+		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))
 
 		// Routes
 		// app.Get("/path", kit.Handler(myHandler.HandleIndex))
