@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"explorer/app/db"
 	"explorer/app/handlers"
+
 	"explorer/app/types"
 	"fmt"
 	"log"
@@ -48,7 +49,7 @@ func HandleLoginCreate(kit *kit.Kit) error {
 		return kit.Render(LoginForm(values, errors))
 	}
 
-	var user User
+	var user types.User
 	err := db.Get().Find(&user, "email = ?", values.Email).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -133,7 +134,7 @@ func HandleEmailVerify(kit *kit.Kit) error {
 		return kit.Render(EmailVerificationError("Invalid user ID"))
 	}
 
-	var user User
+	var user types.User
 	err = db.Get().First(&user, userID).Error
 	if err != nil {
 		return kit.Render(EmailVerificationError("User not found"))

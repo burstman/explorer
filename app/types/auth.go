@@ -1,11 +1,18 @@
 package types
 
+import (
+	"database/sql"
+	"time"
+
+	"gorm.io/gorm"
+)
+
 // AuthUser represents an user that might be authenticated.
 type AuthUser struct {
-	UserID       uint
-	Email    string
-	LoggedIn bool
-	Role     string
+	UserID    uint
+	Email     string
+	LoggedIn  bool
+	Role      string
 	FirstName string
 }
 
@@ -29,4 +36,20 @@ func (user AuthUser) HasRole(role string) bool {
 
 func (user AuthUser) IsAmin() bool {
 	return user.Role == "admin"
+}
+
+type User struct {
+	gorm.Model
+
+	Email           string
+	FirstName       string
+	LastName        string
+	PasswordHash    string
+	PhoneNumber     string
+	SocialLink      string
+	Cin             string
+	EmailVerifiedAt sql.NullTime
+	Role            string `gorm:"not null;default:user"`
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

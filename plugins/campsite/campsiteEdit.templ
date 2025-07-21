@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-templ EditCampsiteForm(camp types.CampSite) {
+templ EditCampsiteForm(camp types.CampSite, buses []types.BuseType) {
 	<form method="POST" action={ "/admin/campsites/edit/" + strconv.Itoa(camp.ID) } class="space-y-4">
 		<h2 class="text-xl font-bold mb-4 text-green-900">Edit Campsite</h2>
 		<label for="name" class="block text-sm font-medium text-gray-700">Camp Name</label>
@@ -66,6 +66,33 @@ templ EditCampsiteForm(camp types.CampSite) {
 				class="w-full border rounded p-2 text-gray-900 placeholder-gray-500"
 			/>
 		</div>
+		<div>
+			<h3 class="text-sm font-medium text-gray-700 mb-2">Assign Buses</h3>
+			<div class="space-y-4">
+				for _, bus := range buses {
+					<div class="flex items-center justify-between gap-4">
+						<span class="text-gray-800">
+							{ bus.Name } ({ bus.Capacity } seats)
+						</span>
+						<input
+							type="number"
+							name={ "bus_quantities[" + strconv.Itoa(bus.ID) + "]" }
+							min="0"
+							value="0"
+							class="w-20 border rounded p-1 text-sm text-right"
+						/>
+					</div>
+				}
+			</div>
+		</div>
+		<label for="location" class="block text-sm font-medium text-gray-700">Price</label>
+		<input
+			type="text"
+			name="price"
+			placeholder="Price"
+			value={ camp.Price }
+			class="w-full border border-gray-300 bg-white text-gray-900 rounded p-2"
+		/>
 		<button
 			type="submit"
 			class="bg-green-900 text-white px-4 py-2 rounded hover:bg-green-800"

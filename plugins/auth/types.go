@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"database/sql"
 	"explorer/app/db"
+	"explorer/app/types"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,7 +18,7 @@ const (
 // UserWithVerificationToken is a struct that will be sent over the
 // auth.signup event. It holds the User struct and the Verification token string.
 type UserWithVerificationToken struct {
-	User  User
+	User  types.User
 	Token string
 }
 
@@ -27,7 +27,7 @@ type Auth struct {
 	Email     string
 	LoggedIn  bool
 	FirstName string
-	Role string
+	Role      string
 }
 
 func (auth Auth) Check() bool {
@@ -42,35 +42,23 @@ func (user Auth) IsAmin() bool {
 	return user.Role == "admin"
 }
 
-
-
-type User struct {
-	gorm.Model
-
-	Email           string
-	FirstName       string
-	LastName        string
-	PasswordHash    string
-	EmailVerifiedAt sql.NullTime
-	Role            string `gorm:"not null;default:user"`
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-}
-
-// createUserFromFormValues creates a new User from signup form values, hashing the password
+// createUserFormValues creates a new User from signup form values, hashing the password
 // and persisting the user record to the database. It returns the created User and any error
 // encountered during password hashing or database insertion.
-func createUserFromFormValues(values SignupFormValues) (User, error) {
+func createUserFormValues(values SignupFormValues) (types.User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(values.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return User{}, err
+		return types.User{}, err
 	}
-	user := User{
+	user := types.User{
 		Email:        values.Email,
 		FirstName:    values.FirstName,
 		LastName:     values.LastName,
 		Role:         "user",
 		PasswordHash: string(hash),
+		PhoneNumber:  values.PhoneNumber,
+		SocialLink:   values.SocialLink,
+		Cin:          values.CardIdentityNumber,
 	}
 	result := db.Get().Create(&user)
 	return user, result.Error
@@ -85,6 +73,5 @@ type Session struct {
 	UserAgent string
 	ExpiresAt time.Time
 	CreatedAt time.Time
-	User      User
+	User      types.User
 }
-

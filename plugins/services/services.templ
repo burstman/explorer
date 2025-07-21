@@ -1,0 +1,71 @@
+package services
+
+import (
+	"explorer/app/types"
+	"strconv"
+)
+
+templ ServicesForm(rows []types.Service) {
+	<section class="max-w-3xl mx-auto py-10">
+		<h2 class="text-2xl font-bold mb-6 text-gray-800">🛎️ Manage Services</h2>
+		<!-- Existing Services List -->
+		<ul id="service-list" class="space-y-4 mb-6">
+			for _, row := range rows {
+				//@ServiceRows(row.ID, row.Name, strconv.FormatFloat(row.Price, 'f', 2, 64))
+				<li class="border p-3 rounded text-sm text-gray-800 flex justify-between items-center">
+					<span class="flex-1"><strong>{ row.Name }</strong> - { row.Price } TND</span>
+					<form
+						hx-post={ "/admin/services/delete/" + strconv.Itoa(row.ID) }
+						hx-target="#service-list"
+						hx-swap="innerHTML"
+						onsubmit="return confirm('Delete this service?')"
+					>
+						<button type="submit" class="text-red-600 hover:text-red-800 text-lg" title="Delete service">🗑️</button>
+					</form>
+				</li>
+			}
+		</ul>
+		<!-- Add Service Form -->
+		<form
+			hx-post="/admin/services/add"
+			hx-target="#service-list"
+			hx-swap="beforeend"
+			class="flex gap-4 items-start flex-col md:flex-row"
+		>
+			<input
+				type="text"
+				name="name"
+				placeholder="Service name"
+				class="flex-1 px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500"
+			/>
+			<input
+				type="text"
+				name="price"
+				placeholder="Price"
+				class="w-28 px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500"
+			/>
+			<button
+				type="submit"
+				class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition text-sm"
+			>
+				💾 Save
+			</button>
+		</form>
+	</section>
+}
+
+// templ ServiceRows(id int, name, price string) {
+// 	<li class="border p-3 rounded text-sm text-gray-800 flex justify-between items-center">
+// 		<span class="flex-1"><strong>{ name }</strong> - { price } TND</span>
+// 		<form
+// 			method="POST"
+// 			action={ "/admin/services/delete/" + strconv.Itoa(id) }
+// 			hx-post={ "/admin/services/delete/" + strconv.Itoa(id) }
+// 			hx-target="#service-list"
+// 			hx-swap="innerHTML"
+// 			onsubmit="return confirm('Delete this service?')"
+// 		>
+// 			<button type="submit" class="text-red-600 hover:text-red-800 text-lg" title="Delete service">🗑️</button>
+// 		</form>
+// 	</li>
+// }

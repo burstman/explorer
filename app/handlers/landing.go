@@ -5,7 +5,11 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 
+	"log"
+	"net/http"
+
 	"github.com/anthdm/superkit/kit"
+	"github.com/go-chi/chi/v5"
 )
 
 // HandleLandingIndex renders the landing page index view using the default layout
@@ -41,13 +45,18 @@ func HandlePhotoView(kit *kit.Kit) error {
 	return RenderWithLayout(kit, landing.PhotoView())
 }
 
+type SeatInfo struct {
+	CampsiteID int
+	TotalSeats int
+}
+
 // HandleCampSites retrieves camp sites and renders the camp sites page with user role, site data, and optional flash messages
 func HandleCampSites(kit *kit.Kit) error {
-	var data []types.CampSite
-	db.Get().Order("title asc").Find(&data)
+	var camps []types.CampSite
+	db.Get().Order("title asc").Find(&camps)
 
 	user, ok := kit.Auth().(types.AuthUser)
-	role := "user"
+	var role string
 	if ok {
 		role = user.GetRole()
 	}
@@ -66,9 +75,52 @@ func HandleCampSites(kit *kit.Kit) error {
 		flashMsg = failFlashes[0].(string)
 	}
 
-	return RenderWithLayout(kit, landing.CampSites(role, data, flashType, flashMsg))
+	var buses []types.BuseType
+	db.Get().Find(&buses)
+
+	var seatData []SeatInfo
+
+	err := db.Get().Table("campsite_buses").
+		Select("campsite_buses.campsite_id, SUM(campsite_buses.quantity * bus_types.capacity) AS total_seats").
+		Joins("JOIN bus_types ON bus_types.id = campsite_buses.bus_type_id").
+		Group("campsite_buses.campsite_id").
+		Scan(&seatData).Error
+	if err != nil {
+		log.Println("Failed to fetch camp site data:", err)
+		return kit.Text(http.StatusInternalServerError, "Failed to fetch camp site data")
+	}
+
+	//map campsite id to total seat
+	totalSeatsMap := make(map[int]int)
+
+	for _, row := range seatData {
+		totalSeatsMap[row.CampsiteID] = row.TotalSeats
+	}
+
+	for _, s := range seatData {
+		log.Printf("Seats for Camp ID %d: %d", s.CampsiteID, s.TotalSeats)
+	}
+
+	return RenderWithLayout(kit, landing.CampSites(role, camps, buses, totalSeatsMap, flashType, flashMsg))
 }
 
 func HandleBookNew(kit *kit.Kit) error {
-	return RenderWithLayout(kit, landing.NewBooking())
+	auth := kit.Auth().(types.AuthUser)
+	userID := auth.UserID
+
+	campID := chi.URLParam(kit.Request, "campID")
+
+	var camp types.CampSite
+	var user types.User
+	err := db.Get().Where("id = ?", campID).First(&camp).Error
+	if err != nil {
+		return kit.Text(http.StatusInternalServerError, "Failed to fetch camp site data")
+	}
+
+	err = db.Get().Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		return kit.Text(http.StatusInternalServerError, "Failed to fetch user data")
+	}
+
+	return RenderWithLayout(kit, landing.NewBooking(camp, user))
 }

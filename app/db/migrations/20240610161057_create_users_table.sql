@@ -7,7 +7,7 @@ create table if not exists users(
 	first_name text not null,
 	last_name text not null,
 	phone_number VARCHAR(15),
-	id_facebook VARCHAR(64),
+	social_Link VARCHAR(64),
 	CIN VARCHAR(8),
 	email_verified_at timestamp,
 	created_at timestamp not null,

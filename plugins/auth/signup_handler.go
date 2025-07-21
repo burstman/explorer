@@ -2,7 +2,9 @@ package auth
 
 import (
 	"explorer/app/db"
+	"explorer/app/types"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,8 +24,11 @@ var signupSchema = v.Schema{
 		v.Min(7),
 		v.Max(50),
 	),
-	"firstName": v.Rules(v.Min(2), v.Max(50)),
-	"lastName":  v.Rules(v.Min(2), v.Max(50)),
+	"firstName":          v.Rules(v.Min(2), v.Max(50)),
+	"lastName":           v.Rules(v.Min(2), v.Max(50)),
+	"phoneNumber":        v.Rules(v.Min(8), v.Max(15)),
+	"socialLink":         v.Rules(v.Max(64)),
+	"cardIdentityNumber": v.Rules(v.Max(8), v.Min(8), DigitOnly),
 }
 
 func HandleSignupIndex(kit *kit.Kit) error {
@@ -43,7 +48,14 @@ func HandleSignupCreate(kit *kit.Kit) error {
 		errors.Add("passwordConfirm", "passwords do not match")
 		return kit.Render(SignupForm(values, errors))
 	}
-	user, err := createUserFromFormValues(values)
+
+	if values.SocialLink != "" && !isValidSocialLink(values.SocialLink) {
+		log.Println(values.SocialLink)
+		errors.Add("socialLink", "invalid social link")
+		return kit.Render(SignupForm(values, errors))
+	}
+
+	user, err := createUserFormValues(values)
 	if err != nil {
 		return err
 	}
@@ -68,7 +80,7 @@ func HandleResendVerificationCode(kit *kit.Kit) error {
 		return err
 	}
 
-	var user User
+	var user types.User
 	if err = db.Get().First(&user, id).Error; err != nil {
 		return kit.Text(http.StatusOK, "An unexpected error occured")
 	}

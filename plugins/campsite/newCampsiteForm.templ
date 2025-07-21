@@ -38,14 +38,29 @@ templ NewCampsiteForm(buses []types.BuseType) {
 				class="w-full border border-gray-300 rounded-lg p-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-500"
 			/>
 		</div>
+		<label for="price" class="block text-sm font-medium text-gray-900">Price</label>
+		<input
+			type="text"
+			name="price"
+			placeholder="Price"
+			class="w-full border rounded p-2"
+		/>
 		<div>
 			<h3 class="text-sm font-medium text-gray-700 mb-2">Assign Buses</h3>
-			<div class="space-y-2">
+			<div class="space-y-4">
 				for _, bus := range buses {
-					<label class="flex items-center space-x-2">
-						<input type="checkbox" name="bus_ids" value={ strconv.Itoa(bus.ID) } class="text-green-600"/>
-						<span class="text-gray-800">{ bus.Name } ({ bus.Capacity } seats)</span>
-					</label>
+					<div class="flex items-center justify-between gap-4">
+						<span class="text-gray-800">
+							{ bus.Name } ({ bus.Capacity } seats)
+						</span>
+						<input
+							type="number"
+							name={ "bus_quantities[" + strconv.Itoa(bus.ID) + "]" }
+							min="0"
+							value="0"
+							class="w-20 border rounded p-1 text-sm text-right"
+						/>
+					</div>
 				}
 			</div>
 		</div>

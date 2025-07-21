@@ -108,6 +108,7 @@ func toStringSlice(flashes []interface{}) []string {
 }
 
 func HandleDelete(kit *kit.Kit) error {
+	log.Println("Request path:", kit.Request.URL.Path)
 	session := kit.GetSession("user-session")
 	idStr := chi.URLParam(kit.Request, "id")
 	id, err := strconv.Atoi(idStr)

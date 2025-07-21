@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/go-chi/chi v1.5.5 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/sessions v1.3.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

@@ -6,6 +6,7 @@ import (
 	"explorer/plugins/auth"
 	buses "explorer/plugins/busesConfig"
 	"explorer/plugins/campsite"
+	"explorer/plugins/services"
 	"log/slog"
 
 	"github.com/anthdm/superkit/kit"
@@ -53,28 +54,35 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/help", kit.Handler(handlers.HandleHelp))
 		app.Get("/photo+view", kit.Handler(handlers.HandlePhotoView))
 		app.Get("/AreaAttraction", kit.Handler(handlers.HandleCampSites))
-		app.Get("/book-new", kit.Handler(handlers.HandleBookNew))
+		app.Get("/book-new/{campID}", kit.Handler(handlers.HandleBookNew))
 	})
 
 	// Authenticated routes
 	//
 	// Routes that "must" have an authenticated user or else they
-	// will be redirected to the configured redirectURL, set in the
+	// will be redirected to the configured redirectURL, set in the²
 	// AuthenticationConfig.
 	router.Group(func(app chi.Router) {
 		app.Use(kit.WithAuthentication(authConfig, true)) // strict set to true
-
+		app.Post("/admin/services/delete/{id}", kit.Handler(services.HandleDeleteService))
 		app.Get("/admin/campsites/new", kit.Handler(campsite.HandleCampsiteNewForm))
 		app.Get("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteEditForm))
 		app.Get("/admin/buses", kit.Handler(buses.HandleModal))
+		app.Get("/admin/services", kit.Handler(services.HandleServices))
 
 		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
 		app.Post("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteUpdate))
+		app.Post("/admin/services/add", kit.Handler(services.HandleAddService))
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))
 
+		// app.Post("/admin/services/{id}/delete", func(w http.ResponseWriter, r *http.Request) {
+		// 	id := chi.URLParam(r, "id")
+		// 	fmt.Println("Captured ID is:", id)
+		// 	w.Write([]byte("Captured ID = " + id))
+		// })
 		// Routes
 		// app.Get("/path", kit.Handler(myHandler.HandleIndex))
 	})

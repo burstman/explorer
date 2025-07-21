@@ -1,20 +1,158 @@
 package landing
 
-templ NewBooking() {
-        <section class="relative h-screen">
-            <!-- Background -->
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
-                <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
-            </div>
+import (
+	"explorer/app/types"
+	"strconv"
+	"time"
+)
 
-            <!-- Centered Content -->
-            <div class="relative z-10 h-full w-full flex items-center justify-center px-6">
-                <div class="text-center">
-                    <h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-4 whitespace-nowrap">
-                        This new Booking page loaded with HTMX
-                    </h1>
-                </div>
-            </div>
-        </section>
+templ NewBooking(camp types.CampSite, user types.User) {
+	<section class="relative min-h-screen">
+		<!-- Background Image -->
+		<div class="absolute inset-0 z-0">
+			<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')"></div>
+			<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+		</div>
+		<!-- Foreground Form Content -->
+		<div class="relative z-10 min-h-screen py-12 px-4 flex items-center justify-center">
+			<div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white/90 backdrop-blur-md rounded-lg p-6 shadow-lg">
+				<!-- Main Form -->
+				<div class="lg:col-span-2">
+					<div class="bg-white rounded-lg shadow-md overflow-hidden">
+						<div class="bg-green-700 text-white p-6">
+							<h1 class="text-2xl font-bold flex items-center gap-2">
+								<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m4 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-6 9l2 2 4-4"
+									></path>
+								</svg>
+								Book Your Camping Adventure
+							</h1>
+							<p class="text-green-100">Fill out the form below to reserve your perfect camping spot</p>
+						</div>
+						<div class="p-6">
+							@BookingForm(camp, user)
+						</div>
+					</div>
+				</div>
+				<!-- Sidebar -->
+				<div>
+					<div class="shadow-lg bg-white rounded-lg sticky top-8 p-5 space-y-4">
+						<h2 class="text-lg font-semibold flex items-center gap-2">
+							<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+							</svg>
+							Booking Summary
+						</h2>
+						<div class="text-sm text-gray-600 space-y-2">
+							<div class="flex justify-between">
+								<span>Base Rate (per night)</span>
+								<span class="font-medium">$0.00</span>
+							</div>
+							<div class="flex justify-between">
+								<span>Number of Nights</span>
+								<span class="font-medium">0</span>
+							</div>
+							<div class="flex justify-between">
+								<span>Additional Services</span>
+								<span class="font-medium">$0.00</span>
+							</div>
+						</div>
+						<div class="border-t pt-2 mt-2">
+							<div class="flex justify-between text-lg font-semibold">
+								<span>Total</span>
+								<span class="text-green-800 font-bold">$0.00</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+}
 
+templ BookingForm(camp types.CampSite, user types.User) {
+	<form method="POST" action="/book" class="space-y-6">
+		<!-- Hidden Fields -->
+		<input type="hidden" name="campID" value={ strconv.Itoa(camp.ID) }/>
+		<input type="hidden" name="startDate" value={ camp.AvailableFrom.Format("2006-01-02") }/>
+		<input type="hidden" name="endDate" value={ camp.AvailableTo.Format("2006-01-02") }/>
+		<input type="hidden" name="bookingDate" value={ time.Now().Format("2006-01-02") }/>
+		<!-- User Profile Info -->
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div>
+				<label class="text-sm text-gray-700">First Name</label>
+				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.FirstName }/>
+			</div>
+			<div>
+				<label class="text-sm text-gray-700">Last Name</label>
+				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.LastName }/>
+			</div>
+		</div>
+		<!-- Camping Date Range -->
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div>
+				<label class="text-sm text-gray-700">Start Date</label>
+				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableFrom.Format("2006-01-02") }/>
+			</div>
+			<div>
+				<label class="text-sm text-gray-700">End Date</label>
+				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableTo.Format("2006-01-02") }/>
+			</div>
+		</div>
+		<!-- Number of Guests -->
+		<div>
+			<label for="guests" class="block text-sm font-medium text-gray-700">Number of Guests</label>
+			<select name="guests" id="guests" required class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+				<option value="">Select number of guests</option>
+				for i:=1; i<= 10;i++ {
+					<option value={ strconv.Itoa(i) }>{ i }</option>
+				}
+				<option value="10+">10+</option>
+			</select>
+		</div>
+		<!-- Additional Services -->
+		<div>
+			<h3 class="text-sm font-semibold text-gray-800 mb-2">Additional Services</h3>
+			<div class="space-y-3 text-sm text-gray-700">
+				<label class="flex items-center gap-2">
+					<input type="checkbox" name="services" value="equipment-rental" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+					<span>Equipment Rental (+$15/day)</span>
+				</label>
+				<label class="flex items-center gap-2">
+					<input type="checkbox" name="services" value="guided-tour" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+					<span>Guided Nature Tour (+$30)</span>
+				</label>
+				<label class="flex items-center gap-2">
+					<input type="checkbox" name="services" value="firewood" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+					<span>Firewood Bundle (+$12)</span>
+				</label>
+				<label class="flex items-center gap-2">
+					<input type="checkbox" name="services" value="early-checkin" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+					<span>Early Check-in (+$20)</span>
+				</label>
+			</div>
+		</div>
+		<!-- Special Requests -->
+		<div>
+			<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+			<textarea name="specialRequest" id="specialRequest" rows="3" placeholder="Any special requests?" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
+		</div>
+		<!-- Agreements -->
+		<div class="space-y-3 text-sm text-gray-700">
+			<label class="flex items-start gap-2">
+				<input type="checkbox" name="agreeTerms" required class="mt-1 h-4 w-4 text-green-700 border-gray-300 rounded focus:ring-green-500"/>
+				<span>I agree to the <a href="/terms" class="underline text-green-800 hover:text-green-900 font-medium">Terms and Conditions</a></span>
+			</label>
+		</div>
+		<!-- Submit Button -->
+		<div>
+			<button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md">
+				📅 Confirm Booking
+			</button>
+		</div>
+	</form>
 }

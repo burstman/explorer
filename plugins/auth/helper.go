@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
+	v "github.com/anthdm/superkit/validate"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -30,3 +33,28 @@ func SendVerificationEmail(email, token string) error {
 	return mailer.SendHTML(email, subject, body, body)
 }
 
+func isValidSocialLink(link string) bool {
+	return strings.HasPrefix(link, "https://www.facebook.com/") ||
+		strings.HasPrefix(link, "https://facebook.com/") ||
+		strings.HasPrefix(link, "https://www.instagram.com/") ||
+		strings.HasPrefix(link, "https://instagram.com/")
+}
+
+var DigitOnly = v.RuleSet{
+	Name: "digitOnly",
+	ValidateFunc: func(rule v.RuleSet) bool {
+		str, ok := rule.FieldValue.(string)
+		if !ok {
+			return false
+		}
+		for _, ch := range str {
+			if !unicode.IsDigit(ch) {
+				return false
+			}
+		}
+		return true
+	},
+	MessageFunc: func(set v.RuleSet) string {
+		return "must be digits"
+	},
+}

@@ -6,68 +6,74 @@ import (
 )
 
 templ ProfileShow(formValues ProfileFormValues) {
-	<section class="relative min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
-		<!-- Centered Profile Card -->
-		<div class="relative z-10 flex justify-center px-4 pt-20">
-			<div class="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-8 shadow-lg ">
-				<div class="flex flex-col gap-4 text-center">
-					<h1 class="text-4xl font-semibold text-white">
+	<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+		<div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+		<div class="relative z-10 flex justify-center items-start pt-24 pb-16 px-4">
+			<div class="w-full max-w-md bg-green-100 text-gray-900 rounded-2xl p-8 shadow-xl">
+				<!-- Header -->
+				<div class="text-center space-y-2">
+					<h1 class="text-4xl font-bold text-green-500">
 						Welcome, <span class="text-green-400">{ formValues.FirstName } { formValues.LastName }</span>
 					</h1>
-					<div class="flex justify-center gap-4 text-sm text-white/70">
-						//<a href="/" class="underline hover:text-white">back to home</a>
-						//<button hx-delete="/logout" class="underline hover:text-white">sign me out</button>
-					</div>
+					<p class="text-white/70 text-sm">Manage and update your profile details below.</p>
+					// <div class="flex justify-center gap-6 mt-4 text-sm text-white/80">
+					// 	<a href="/" class="underline hover:text-white transition">Back to home</a>
+					// 	<button hx-delete="/logout" class="underline hover:text-white transition">Sign out</button>
+					// </div>
 				</div>
-				<div class="flex flex-col gap-2 text-center mb-8">
-					@ProfileForm(formValues, v.Errors{})
-				</div>
+				<!-- Form -->
+				@ProfileForm(formValues, v.Errors{})
 			</div>
 		</div>
 	</section>
 }
 
 templ ProfileForm(values ProfileFormValues, errors v.Errors) {
-	<form hx-put="/profile" class="flex flex-col gap-5 mt-15">
+	<form hx-put="/profile" class="grid grid-cols-1 gap-6">
 		<input type="hidden" name="id" value={ fmt.Sprint(values.ID) }/>
-		<div class="flex flex-col gap-2">
-			<label for="firstName" class="text-white text-sm">First Name</label>
-			<input
-				{ inputAttrs(errors.Has("firstName"))... }
-				class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-				name="firstName"
-				id="firstName"
-				value={ values.FirstName }
-			/>
-			if errors.Has("firstName") {
-				<div class="text-red-500 text-xs">{ errors.Get("firstName")[0] }</div>
-			}
+		<!-- First and Last Name -->
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			@InputField("First Name", "firstName", values.FirstName, errors)
+			@InputField("Last Name", "lastName", values.LastName, errors)
 		</div>
-		<div class="flex flex-col gap-2">
-			<label for="lastName" class="text-white text-sm">Last Name</label>
-			<input
-				{ inputAttrs(errors.Has("lastName"))... }
-				class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-				name="lastName"
-				id="lastName"
-				value={ values.LastName }
-			/>
-			if errors.Has("lastName") {
-				<div class="text-red-500 text-xs">{ errors.Get("lastName")[0] }</div>
-			}
+		<!-- Email -->
+		<div class="flex flex-col gap-1">
+			<label for="email" class="text-gray-700 text-sm font-medium">Email</label>
+			<div class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg border border-gray-300">
+				{ values.Email }
+			</div>
 		</div>
-		<div class="flex flex-col gap-2">
-			<label for="email" class="text-white text-sm">Email</label>
-			<div class="bg-white/10 text-white px-4 py-2 rounded-lg border border-white/20">{ values.Email }</div>
-		</div>
+		<!-- Phone Number -->
+		@InputField("Phone Number", "phoneNumber", values.PhoneNumber, errors)
+		<!-- Facebook ID -->
+		@InputField("Social Link", "socialLink", values.SocialLink, errors)
+		<!-- CIN -->
+		@InputField("National Identity Card", "nationalIdentityCard", values.NationalIdentityCard, errors)
+		<!-- Submit Button -->
 		<button
 			{ buttonAttrs()... }
-			class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition"
+			class="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold transition"
 		>
-			Update profile
+			Update Profile
 		</button>
 		if len(values.Success) > 0 {
-			<div class="text-green-400 text-sm text-center mt-2">{ values.Success }</div>
+			<div class="text-green-400 text-center text-sm">{ values.Success }</div>
 		}
 	</form>
+}
+
+templ InputField(label, name, value string, errors v.Errors) {
+	<div class="flex flex-col gap-1">
+		<label for={ name } class="text-gray-700 text-sm font-medium">{ label }</label>
+		<input
+			{ inputAttrs(errors.Has(name))... }
+			class="bg-white text-gray-900 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+			name={ name }
+			id={ name }
+			value={ value }
+		/>
+		if errors.Has(name) {
+			<div class="text-red-500 text-xs">{ errors.Get(name)[0] }</div>
+		}
+	</div>
 }

@@ -4,11 +4,22 @@ import (
 	"context"
 	"explorer/app/mailer"
 	"explorer/plugins/auth"
+	"os"
 
 	"fmt"
 	"log"
+
+	"github.com/joho/godotenv"
 )
-const ngrokURL = "https://1568-196-177-141-25.ngrok-free.app"
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+var ngrokURL = os.Getenv("NGROK_ADDRESS")
 
 // Event handlers
 func OnUserSignup(ctx context.Context, event any) {

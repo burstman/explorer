@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"explorer/app/types"
 	"explorer/app/views/layouts"
 	"fmt"
 	v "github.com/anthdm/superkit/validate"
@@ -12,28 +13,37 @@ type SignupIndexPageData struct {
 }
 
 type SignupFormValues struct {
-	Email           string `form:"email"`
-	FirstName       string `form:"firstName"`
-	LastName        string `form:"lastName"`
-	Password        string `form:"password"`
-	PasswordConfirm string `form:"passwordConfirm"`
+	Email              string `form:"email"`
+	FirstName          string `form:"firstName"`
+	LastName           string `form:"lastName"`
+	Password           string `form:"password"`
+	PasswordConfirm    string `form:"passwordConfirm"`
+	PhoneNumber        string `form:"phoneNumber"`
+	SocialLink         string `form:"socialLink"`
+	CardIdentityNumber string `form:"cardIdentityNumber"`
 }
 
 templ SignupIndex(data SignupIndexPageData) {
 	@layouts.BaseLayout() {
-		<div class="w-full justify-center">
-			<div class="mt-10 lg:mt-20">
-				<div class="max-w-md mx-auto border rounded-md shadow-sm py-12 px-6 flex flex-col gap-8">
-					<h2 class="text-center text-2xl font-medium">Signup</h2>
-					@SignupForm(data.FormValues, data.FormErrors)
+		<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+			<!-- Optional: dark overlay -->
+			<div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+			<!-- Centered Signup Card -->
+			<div class="relative z-10 flex justify-center items-start pt-24 px-4 pb-16">
+				<div class="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-8">
+					<h2 class="text-center text-2xl font-bold text-gray-800">Signup</h2>
+					<div class="mt-6">
+						@SignupForm(data.FormValues, data.FormErrors)
+					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 	}
 }
 
 templ SignupForm(values SignupFormValues, errors v.Errors) {
 	<form hx-post="/signup" class="flex flex-col gap-4">
+		<!-- Email -->
 		<div class="flex flex-col gap-1">
 			<label for="email">Email *</label>
 			<input { inputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }/>
@@ -41,10 +51,11 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
 		</div>
+		<!-- First Name -->
 		<div class="flex flex-col gap-1">
 			<label for="firstName">First Name *</label>
 			<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
-			if errors.Has("fistName") {
+			if errors.Has("firstName") {
 				<ul>
 					for _, err := range errors.Get("firstName") {
 						<li class="text-red-500 text-xs">{ err }</li>
@@ -52,6 +63,7 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				</ul>
 			}
 		</div>
+		<!-- Last Name -->
 		<div class="flex flex-col gap-1">
 			<label for="lastName">Last Name *</label>
 			<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
@@ -63,6 +75,31 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				</ul>
 			}
 		</div>
+		<!-- Phone Number -->
+		<div class="flex flex-col gap-1">
+			<label for="phoneNumber">Phone Number</label>
+			<input { inputAttrs(errors.Has("phoneNumber"))... } name="phoneNumber" id="phoneNumber" value={ values.PhoneNumber }/>
+			if errors.Has("phoneNumber") {
+				<div class="text-red-500 text-xs">{ errors.Get("phoneNumber")[0] }</div>
+			}
+		</div>
+		<!-- Social Link -->
+		<div class="flex flex-col gap-1">
+			<label for="socialLink">Social Link (Facebook or Instagram)</label>
+			<input { inputAttrs(errors.Has("socialLink"))... } name="socialLink" id="socialLink" value={ values.SocialLink }/>
+			if errors.Has("socialLink") {
+				<div class="text-red-500 text-xs">{ errors.Get("socialLink")[0] }</div>
+			}
+		</div>
+		<!-- Card Identity Number -->
+		<div class="flex flex-col gap-1">
+			<label for="cardIdentityNumber">National ID Number *</label>
+			<input { inputAttrs(errors.Has("cardIdentityNumber"))... } name="cardIdentityNumber" id="cardIdentityNumber" value={ values.CardIdentityNumber }/>
+			if errors.Has("cardIdentityNumber") {
+				<div class="text-red-500 text-xs">{ errors.Get("cardIdentityNumber")[0] }</div>
+			}
+		</div>
+		<!-- Password -->
 		<div class="flex flex-col gap-1">
 			<label for="password">Password *</label>
 			<input { inputAttrs(errors.Has("password"))... } type="password" name="password" id="password"/>
@@ -74,6 +111,7 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				</ul>
 			}
 		</div>
+		<!-- Confirm Password -->
 		<div class="flex flex-col gap-1">
 			<label for="passwordConfirm">Confirm Password *</label>
 			<input { inputAttrs(errors.Has("passwordConfirm"))... } type="password" name="passwordConfirm" id="passwordConfirm"/>
@@ -81,14 +119,18 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("passwordConfirm")[0] }</div>
 			}
 		</div>
+		<!-- Submit -->
 		<button { buttonAttrs()... }>
 			Signup
 		</button>
-		<a class="text-sm underline cursor-pointer" hx-get="/login" hx-target="#main-content" hx-swap="innerHTML">Already have an account? Login here.</a>
+		<!-- Switch to login -->
+		<a class="text-sm underline cursor-pointer" hx-get="/login" hx-target="#main-content" hx-swap="innerHTML">
+			Already have an account? Login here.
+		</a>
 	</form>
 }
 
-templ ConfirmEmail(user User) {
+templ ConfirmEmail(user types.User) {
 	<form hx-post="/resend-email-verification" class="flex flex-col gap-4 text-sm">
 		<input type="hidden" name="userID" value={ fmt.Sprint(user.ID) }/>
 		<div>An email confirmation link has been sent to: <span class="underline font-medium">{ user.Email }</span></div>

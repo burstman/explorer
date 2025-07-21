@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"net/http"
@@ -17,7 +18,7 @@ import (
 // handlers/campsites.go
 func HandleCampsiteCreate(kit *kit.Kit) error {
 	session := kit.GetSession("user-session")
-	busIDs := kit.Request.Form["bus_ids"]
+
 	// Parse the form
 	if err := kit.Request.ParseForm(); err != nil {
 		session.AddFlash("Invalid form data", "fail")
@@ -26,14 +27,20 @@ func HandleCampsiteCreate(kit *kit.Kit) error {
 	}
 
 	// Get form values
-	camp := types.CampSite{
-		Name:        kit.Request.FormValue("name"),
-		Description: kit.Request.FormValue("description"),
-		ImageURL:    kit.Request.FormValue("image_url"),
-		Location:    kit.Request.FormValue("location"),
+	var camp types.CampSite
+	camp.Name = kit.Request.FormValue("name")
+	camp.Description = kit.Request.FormValue("description")
+	camp.ImageURL = kit.Request.FormValue("image_url")
+	camp.Location = kit.Request.FormValue("location")
+	strPrice := kit.Request.FormValue("price")
+	var err error
+	camp.Price, err = strconv.ParseFloat(strPrice, 64)
+	if err != nil {
+		session.AddFlash("Invalid Price", "fail")
+		session.Save(kit.Request, kit.Response)
+		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
 	}
 
-	var err error
 	camp.AvailableFrom, err = parseFormDate(kit.Request.FormValue("available_from"))
 	if err != nil {
 		session.AddFlash("Invalid From Date", "fail")
@@ -50,10 +57,40 @@ func HandleCampsiteCreate(kit *kit.Kit) error {
 
 	// Save to DB
 	if err := db.Get().Create(&camp).Error; err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			session.AddFlash("Campsite already exists", "fail")
+			session.Save(kit.Request, kit.Response)
+			return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
+		}
 		log.Println("Failed to create campsite:", err)
 		session.AddFlash("Failed to create campsite", "fail")
 		session.Save(kit.Request, kit.Response)
 		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
+	}
+
+	//create related bus quantities (after camp.ID is sets)
+	for key, values := range kit.Request.Form {
+		if strings.HasPrefix(key, "bus_quantities[") {
+			idStr := strings.TrimSuffix(strings.TrimPrefix(key, "bus_quantities["), "]")
+			busID, _ := strconv.Atoi(idStr)
+			quantityStr := values[0]
+			quantity, _ := strconv.Atoi(quantityStr)
+			if quantity <= 0 {
+				continue
+			}
+
+			err := db.Get().Create(&types.CampsiteBus{
+				CampsiteID: camp.ID,
+				BusTypeID:  busID,
+				Quantity:   quantity,
+			}).Error
+			if err != nil {
+				log.Println("Failed to add bus info:", err)
+				session.AddFlash("Failed to add bus info", "fail")
+				session.Save(kit.Request, kit.Response)
+				return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
+			}
+		}
 	}
 
 	session.AddFlash("Campsite created successfully", "success")
@@ -61,16 +98,20 @@ func HandleCampsiteCreate(kit *kit.Kit) error {
 	return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
 }
 
-type CampsiteFormValues struct {
-	ID          uint   `form:"id"`
-	Name        string `form:"name"`
-	Description string `form:"description"`
-	ImageURL    string `form:"image_url"`
-}
+// type CampsiteFormValues struct {
+// 	ID          uint   `form:"id"`
+// 	Name        string `form:"name"`
+// 	Description string `form:"description"`
+// 	ImageURL    string `form:"image_url"`
+// }
 
 func HandleCampsiteNewForm(kit *kit.Kit) error {
-	var bus = []types.BuseType{}
-	return kit.Render(NewCampsiteForm(bus))
+	var buses []types.BuseType
+
+	if err := db.Get().Find(&buses).Error; err != nil {
+		return kit.Text(http.StatusInternalServerError, "Failed to load buses")
+	}
+	return kit.Render(NewCampsiteForm(buses))
 }
 
 // HandleCampsiteEditForm handles the HTTP request to display the edit form for a specific campsite.
@@ -95,7 +136,15 @@ func HandleCampsiteEditForm(kit *kit.Kit) error {
 		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
 	}
 
-	return kit.Render(EditCampsiteForm(camp))
+	var Allbuses []types.BuseType
+
+	if err := db.Get().Find(&Allbuses).Error; err != nil {
+		session.AddFlash("Failed to load buses", "fail")
+		session.Save(kit.Request, kit.Response)
+		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
+	}
+
+	return kit.Render(EditCampsiteForm(camp, Allbuses))
 }
 
 func FindCampByID(id int) (types.CampSite, error) {
@@ -135,6 +184,17 @@ func HandleCampsiteUpdate(kit *kit.Kit) error {
 	fromDate := kit.Request.FormValue("available_from")
 	toDate := kit.Request.FormValue("available_to")
 
+	strPrice := kit.Request.FormValue("price")
+
+	price, err := strconv.ParseFloat(strPrice, 64)
+	if err != nil {
+		session.AddFlash("Invalid Price", "fail")
+		session.Save(kit.Request, kit.Response)
+		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
+	}
+
+	//log.Printf("Selected Buses: %+v", selectedBuses)
+
 	// Find the existing campsite
 	var camp types.CampSite
 	if err := db.Get().First(&camp, id).Error; err != nil {
@@ -142,12 +202,32 @@ func HandleCampsiteUpdate(kit *kit.Kit) error {
 		session.Save(kit.Request, kit.Response)
 		return kit.Redirect(http.StatusSeeOther, "/AreaAttraction")
 	}
+	// Delete existing associations first
+	db.Get().Where("campsite_id = ?", camp.ID).Delete(&types.CampsiteBus{})
 
+	for key, values := range kit.Request.Form {
+		if strings.HasPrefix(key, "bus_quantities[") {
+			idStr := strings.TrimSuffix(strings.TrimPrefix(key, "bus_quantities["), "]")
+			busID, _ := strconv.Atoi(idStr)
+			quantityStr := values[0]
+			quantity, _ := strconv.Atoi(quantityStr)
+			if quantity <= 0 {
+				continue
+			}
+
+			db.Get().Create(&types.CampsiteBus{
+				CampsiteID: camp.ID,
+				BusTypeID:  busID,
+				Quantity:   quantity,
+			})
+		}
+	}
 	// Update fields
 	camp.Name = name
 	camp.Description = description
 	camp.ImageURL = imageURL
 	camp.Location = location
+	camp.Price = price
 	camp.AvailableFrom, err = parseFormDate(fromDate)
 	if err != nil {
 		session.AddFlash("Invalid From Date ", "fail")

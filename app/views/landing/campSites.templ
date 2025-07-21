@@ -3,6 +3,7 @@ package landing
 import (
 	"explorer/app/types"
 	"explorer/plugins/campsite"
+	"fmt"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ func getFlashStyle(flashType string) string {
 	return "bg-red-600"
 }
 
-templ CampSites(role string, camps []types.CampSite, flashType, flashMsg string) {
+templ CampSites(role string, camps []types.CampSite, buses []types.BuseType, seatMap map[int]int, flashType, flashMsg string) {
 	<div
 		x-data="{ show: true }"
 		x-init="setTimeout(() => show = false, 4000)"
@@ -46,7 +47,7 @@ templ CampSites(role string, camps []types.CampSite, flashType, flashMsg string)
 			<!-- Cards -->
 			<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl w-full">
 				for _, camp := range camps {
-					@campCard(camp, role)
+					@campCard(camp, role, seatMap)
 				}
 			</div>
 		</div>
@@ -65,7 +66,7 @@ templ CampSites(role string, camps []types.CampSite, flashType, flashMsg string)
 				<!-- Add Mode Inline -->
 				<div x-show="mode === 'add'">
 					<h2 class="text-xl font-bold mb-4 text-green-900">Add New Campsite</h2>
-					@campsite.NewCampsiteForm()
+					@campsite.NewCampsiteForm(buses)
 				</div>
 				<!-- Edit Mode -->
 				<!-- HTMX will replace this part -->
@@ -75,13 +76,14 @@ templ CampSites(role string, camps []types.CampSite, flashType, flashMsg string)
 	</section>
 }
 
-templ campCard(camp types.CampSite, role string) {
+templ campCard(camp types.CampSite, role string, seatMap map[int]int) {
 	<div class="bg-white rounded-xl shadow-md overflow-hidden transition transform hover:scale-105">
 		<img src={ camp.ImageURL } alt="Campsite" class="w-full h-48 object-cover"/>
 		<div class="p-4">
 			<h2 class="text-xl font-bold text-green-900">{ camp.Name }</h2>
 			<p class="text-sm text-gray-700 mt-1">{ camp.Description }</p>
 			<p class="text-xs text-gray-500 mt-2">{ camp.Location }</p>
+			<p class="text-sm text-gray-600">Total Seats: { seatMap[camp.ID] }</p>
 			<p class="text-xs text-gray-500 mt-2">
 				Available from: { templ.EscapeString(func() string {
 				if camp.AvailableFrom != nil {
@@ -98,6 +100,7 @@ templ campCard(camp types.CampSite, role string) {
 				return ""
 			}()) }
 			</p>
+			<p class="text-xs text-gray-500 mt-2">{ camp.Price } </p>
 			if role == "admin" || role == "superuser" {
 				<!-- Action Buttons: Edit and Delete -->
 				<div class="flex justify-between items-center mt-4">
@@ -126,7 +129,7 @@ templ campCard(camp types.CampSite, role string) {
 			if role == "user" {
 				<!-- Booking Button -->
 				<div class="mt-4 text-right">
-					<form method="GET" action={ "/booking/campsite/" + strconv.Itoa(camp.ID) }>
+					<form method="GET" action={ fmt.Sprintf("/book-new/%d", camp.ID) }>
 						<button
 							type="submit"
 							class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
