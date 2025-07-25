@@ -4,77 +4,81 @@ import (
 	"explorer/app/types"
 	"strconv"
 	"time"
+
+	"fmt"
 )
 
-templ NewBooking(camp types.CampSite, user types.User) {
-	<section class="relative min-h-screen">
-		<!-- Background Image -->
-		<div class="absolute inset-0 z-0">
-			<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')"></div>
-			<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
-		</div>
-		<!-- Foreground Form Content -->
-		<div class="relative z-10 min-h-screen py-12 px-4 flex items-center justify-center">
-			<div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white/90 backdrop-blur-md rounded-lg p-6 shadow-lg">
-				<!-- Main Form -->
-				<div class="lg:col-span-2">
-					<div class="bg-white rounded-lg shadow-md overflow-hidden">
-						<div class="bg-green-700 text-white p-6">
-							<h1 class="text-2xl font-bold flex items-center gap-2">
-								<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m4 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-6 9l2 2 4-4"
-									></path>
-								</svg>
-								Book Your Camping Adventure
-							</h1>
-							<p class="text-green-100">Fill out the form below to reserve your perfect camping spot</p>
-						</div>
-						<div class="p-6">
-							@BookingForm(camp, user)
+templ NewBooking(camp types.CampSite, user types.User, allService []types.Service) {
+	<div x-data="{ termsOpen: false }">
+		<section class="relative min-h-screen">
+			<!-- Background Image -->
+			<div class="absolute inset-0 z-0">
+				<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')"></div>
+				<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+			</div>
+			<!-- Foreground Form Content -->
+			<div class="relative z-10 min-h-screen py-12 px-4 flex items-center justify-center">
+				<div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white/90 backdrop-blur-md rounded-lg p-6 shadow-lg">
+					<!-- Main Form -->
+					<div class="lg:col-span-2">
+						<div class="bg-white rounded-lg shadow-md overflow-hidden">
+							<div class="bg-green-700 text-white p-6">
+								<h1 class="text-2xl font-bold flex items-center gap-2">
+									<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m4 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-6 9l2 2 4-4"
+										></path>
+									</svg>
+									Book Your Camping Adventure
+								</h1>
+								<p class="text-green-100">Fill out the form below to reserve your perfect camping spot</p>
+							</div>
+							<div class="p-6">
+								@BookingForm(camp, user, allService)
+							</div>
 						</div>
 					</div>
-				</div>
-				<!-- Sidebar -->
-				<div>
-					<div class="shadow-lg bg-white rounded-lg sticky top-8 p-5 space-y-4">
-						<h2 class="text-lg font-semibold flex items-center gap-2">
-							<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-							</svg>
-							Booking Summary
-						</h2>
-						<div class="text-sm text-gray-600 space-y-2">
-							<div class="flex justify-between">
-								<span>Base Rate (per night)</span>
-								<span class="font-medium">$0.00</span>
+					<!-- Sidebar -->
+					<div>
+						<div class="shadow-lg bg-white rounded-lg sticky top-8 p-5 space-y-4">
+							<h2 class="text-lg font-semibold flex items-center gap-2">
+								<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+								</svg>
+								Booking Summary
+							</h2>
+							<div class="text-sm text-gray-600 space-y-2">
+								<div class="flex justify-between">
+									<span>Base Rate </span>
+									<span class="font-medium">{ camp.Price } TND</span>
+								</div>
+								<div class="flex justify-between">
+									<span>Number Of Guests </span>
+									<span class="font-medium">0</span>
+								</div>
+								<div class="flex justify-between">
+									<span>Additional Services</span>
+									<span class="font-medium">0 TND</span>
+								</div>
 							</div>
-							<div class="flex justify-between">
-								<span>Number of Nights</span>
-								<span class="font-medium">0</span>
-							</div>
-							<div class="flex justify-between">
-								<span>Additional Services</span>
-								<span class="font-medium">$0.00</span>
-							</div>
-						</div>
-						<div class="border-t pt-2 mt-2">
-							<div class="flex justify-between text-lg font-semibold">
-								<span>Total</span>
-								<span class="text-green-800 font-bold">$0.00</span>
+							<div class="border-t pt-2 mt-2">
+								<div class="flex justify-between text-lg font-semibold">
+									<span>Total</span>
+									<span class="text-green-800 font-bold">{ camp.Price } TND</span>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	</section>
+		</section>
+	</div>
 }
 
-templ BookingForm(camp types.CampSite, user types.User) {
+templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Service) {
 	<form method="POST" action="/book" class="space-y-6">
 		<!-- Hidden Fields -->
 		<input type="hidden" name="campID" value={ strconv.Itoa(camp.ID) }/>
@@ -118,22 +122,17 @@ templ BookingForm(camp types.CampSite, user types.User) {
 		<div>
 			<h3 class="text-sm font-semibold text-gray-800 mb-2">Additional Services</h3>
 			<div class="space-y-3 text-sm text-gray-700">
-				<label class="flex items-center gap-2">
-					<input type="checkbox" name="services" value="equipment-rental" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
-					<span>Equipment Rental (+$15/day)</span>
-				</label>
-				<label class="flex items-center gap-2">
-					<input type="checkbox" name="services" value="guided-tour" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
-					<span>Guided Nature Tour (+$30)</span>
-				</label>
-				<label class="flex items-center gap-2">
-					<input type="checkbox" name="services" value="firewood" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
-					<span>Firewood Bundle (+$12)</span>
-				</label>
-				<label class="flex items-center gap-2">
-					<input type="checkbox" name="services" value="early-checkin" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
-					<span>Early Check-in (+$20)</span>
-				</label>
+				for _, s := range Allservice {
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="Services"
+							value={ strconv.Itoa(s.ID) }
+							class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+						/>
+						<span>{ s.Name } +TND ({ fmt.Sprintf("%.2f",s.Price) })</span>
+					</label>
+				}
 			</div>
 		</div>
 		<!-- Special Requests -->
@@ -143,9 +142,12 @@ templ BookingForm(camp types.CampSite, user types.User) {
 		</div>
 		<!-- Agreements -->
 		<div class="space-y-3 text-sm text-gray-700">
-			<label class="flex items-start gap-2">
-				<input type="checkbox" name="agreeTerms" required class="mt-1 h-4 w-4 text-green-700 border-gray-300 rounded focus:ring-green-500"/>
-				<span>I agree to the <a href="/terms" class="underline text-green-800 hover:text-green-900 font-medium">Terms and Conditions</a></span>
+			<label class="flex items-start gap-2 text-sm mt-4">
+				<input type="checkbox" name="agree_terms" required class="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+				<span>
+					I have read and agree to the 
+					<button type="button" @click="termsOpen = true" class="text-green-700 underline hover:text-green-500">Terms and Conditions</button>
+				</span>
 			</label>
 		</div>
 		<!-- Submit Button -->
@@ -155,4 +157,37 @@ templ BookingForm(camp types.CampSite, user types.User) {
 			</button>
 		</div>
 	</form>
+	@terms()
+}
+
+templ terms() {
+	<!-- Modal backdrop -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 bg-black/50 z-40"
+		@click="termsOpen = false"
+	></div>
+	<!-- Modal content -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 flex items-center justify-center z-50"
+		style="backdrop-filter: blur(2px);"
+	>
+		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
+			<button @click="termsOpen = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-lg font-bold">✖</button>
+			<h2 class="text-xl font-bold mb-4">Terms and Conditions</h2>
+			<div class="text-sm max-h-[60vh] overflow-y-auto space-y-3 text-gray-700">
+				<p><strong>1. Booking Policy:</strong> All reservations are subject to availability. Full payment is required at the time of booking.</p>
+				<p><strong>2. Cancellations:</strong> Cancellations made 48 hours before the check-in date will receive a full refund. No refunds for cancellations after this period.</p>
+				<p><strong>3. Check-in & Check-out:</strong> Standard check-in is at 2 PM and check-out is at 11 AM. Early check-in must be selected and paid for in advance.</p>
+				<p><strong>4. Liability:</strong> We are not responsible for personal injuries, lost or stolen items, or damages to personal property during your stay.</p>
+				<p><strong>5. Code of Conduct:</strong> Guests must respect the campsite, nature, and fellow guests. Any disruptive behavior may result in immediate eviction without a refund.</p>
+				<p><strong>6. Services:</strong> Additional services (equipment rental, guided tours, firewood, early check-in) must be booked in advance and are non-refundable once the stay begins.</p>
+				<p><strong>7. Weather Disclaimer:</strong> Outdoor conditions are subject to change. No refunds for weather-related changes unless the campsite is deemed unsafe by management.</p>
+				<p><strong>8. Agreement:</strong> By submitting the booking form, you acknowledge that you have read, understood, and agreed to these terms.</p>
+			</div>
+		</div>
+	</div>
 }

@@ -53,7 +53,6 @@ func HandleServiceCreate(kit *kit.Kit) error {
 }
 
 func HandleServiceDelete(kit *kit.Kit) error {
-	fmt.Println("test")
 	idStr := chi.URLParam(kit.Request, "id")
 	if len(idStr) == 0 {
 		log.Println("id is null")

@@ -114,13 +114,19 @@ func HandleBookNew(kit *kit.Kit) error {
 	var user types.User
 	err := db.Get().Where("id = ?", campID).First(&camp).Error
 	if err != nil {
-		return kit.Text(http.StatusInternalServerError, "Failed to fetch camp site data")
+		return err
 	}
 
 	err = db.Get().Where("id = ?", userID).First(&user).Error
 	if err != nil {
-		return kit.Text(http.StatusInternalServerError, "Failed to fetch user data")
+		return err
+	}
+	var services []types.Service
+
+	err = db.Get().Find(&services).Error
+	if err != nil {
+		return err
 	}
 
-	return RenderWithLayout(kit, landing.NewBooking(camp, user))
+	return RenderWithLayout(kit, landing.NewBooking(camp, user, services))
 }

@@ -64,7 +64,7 @@ func InitializeRoutes(router *chi.Mux) {
 	// AuthenticationConfig.
 	router.Group(func(app chi.Router) {
 		app.Use(kit.WithAuthentication(authConfig, true)) // strict set to true
-		app.Post("/admin/services/{id}/delete", kit.Handler(services.HandleServiceDelete))
+
 		app.Get("/admin/campsites/new", kit.Handler(campsite.HandleCampsiteNewForm))
 		app.Get("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteEditForm))
 		app.Get("/admin/buses", kit.Handler(buses.HandleModal))
@@ -77,13 +77,7 @@ func InitializeRoutes(router *chi.Mux) {
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))
-
-		// app.Post("/admin/services/{id}/delete", func(w http.ResponseWriter, r *http.Request) {
-		// 	fmt.Println("✅ Endpoint hit!")
-		// 	fmt.Println("Captured ID:", chi.URLParam(r, "id"))
-		// 	w.Write([]byte("OK"))
-		// }) // Routes
-		// app.Get("/path", kit.Handler(myHandler.HandleIndex))
+		app.Post("/admin/services/{id}/delete", kit.Handler(services.HandleServiceDelete))
 	})
 }
 

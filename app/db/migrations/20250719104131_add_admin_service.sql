@@ -10,4 +10,4 @@ CREATE TABLE service (
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS service;
