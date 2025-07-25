@@ -239,7 +239,7 @@ templ Navigation(Role string, isLoggedIn bool) {
 									<a
 										@click="modalOpen = true"
 										hx-get="/admin/buses"
-										hx-target="#bus-modal-content"
+										hx-target="#modal-content"
 										hx-swap="innerHTML"
 										class="px-2 py-1 w-full flex items-center rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
 									>
@@ -248,7 +248,7 @@ templ Navigation(Role string, isLoggedIn bool) {
 									<a
 										@click="modalOpen = true"
 										hx-get="/admin/services"
-										hx-target="#bus-modal-content"
+										hx-target="#modal-content"
 										hx-swap="innerHTML"
 										class="px-2 py-1 w-full flex items-center rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
 									>
