@@ -41,8 +41,24 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 							</div>
 						</div>
 					</div>
-					<!-- Sidebar -->
-					<div>
+					<!-- Sidebar -->	
+					<div 
+					x-data={`{
+								campPrice: ${fmt.Sprintf("%.2f", camp.PricePerNight)},
+								guests: 0,
+								services: [],
+								servicesData: {
+									{{ for _, s := range allService }}
+										{{ s.ID }}: {{ fmt.Sprintf("%.2f", s.Price) }},
+									{{ end }}
+								},
+								get total() {
+									const guestsFactor = 1 + Number(this.guests);
+									const servicesTotal = this.services.reduce((sum, id) => sum + this.servicesData[id], 0);
+									return (this.campPrice * guestsFactor + servicesTotal).toFixed(2);
+								}
+							}`}
+					>
 						<div class="shadow-lg bg-white rounded-lg sticky top-8 p-5 space-y-4">
 							<h2 class="text-lg font-semibold flex items-center gap-2">
 								<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,21 +69,21 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 							<div class="text-sm text-gray-600 space-y-2">
 								<div class="flex justify-between">
 									<span>Base Rate </span>
-									<span class="font-medium">{ camp.Price } TND</span>
+									<span class="font-medium">{ fmt.Sprintf("%.2f",camp.Price) } TND</span>
 								</div>
 								<div class="flex justify-between">
 									<span>Number Of Guests </span>
-									<span class="font-medium">0</span>
+									<span class="font-medium" x-text="guests"></span>
 								</div>
 								<div class="flex justify-between">
 									<span>Additional Services</span>
-									<span class="font-medium">0 TND</span>
+									<span class="font-medium" x-text="servicesTotal.toFixed(2)+ ' TND'"></span>
 								</div>
 							</div>
 							<div class="border-t pt-2 mt-2">
 								<div class="flex justify-between text-lg font-semibold">
 									<span>Total</span>
-									<span class="text-green-800 font-bold">{ camp.Price } TND</span>
+									<span class="text-green-800 font-bold" x-text={ fmt.Sprintf("(guests * %.2f + serviceTotal).toFixed(2) TND", camp.Price) }></span>
 								</div>
 							</div>
 						</div>
@@ -110,9 +126,14 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<!-- Number of Guests -->
 		<div>
 			<label for="guests" class="block text-sm font-medium text-gray-700">Number of Guests</label>
-			<select name="guests" id="guests" required class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+			<select
+				name="guests"
+				id="guests"
+				required
+				class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+			>
 				<option value="">Select number of guests</option>
-				for i:=1; i<= 10;i++ {
+				for i:=0; i<= 10;i++ {
 					<option value={ strconv.Itoa(i) }>{ i }</option>
 				}
 				<option value="10+">10+</option>
@@ -128,7 +149,9 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 							type="checkbox"
 							name="Services"
 							value={ strconv.Itoa(s.ID) }
+							x-model="services"
 							class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+							@change={ fmt.Sprintf("servicesTotal += $event.target.checked ? %d: -%d", s.Price, s.Price) }
 						/>
 						<span>{ s.Name } +TND ({ fmt.Sprintf("%.2f",s.Price) })</span>
 					</label>
