@@ -810,6 +810,10 @@ body {
   height: 100vh;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .max-h-\[60vh\] {
   max-height: 60vh;
 }
@@ -844,6 +848,18 @@ body {
 
 .w-full {
   width: 100%;
+}
+
+.w-1\/2 {
+  width: 50%;
+}
+
+.w-16 {
+  width: 4rem;
+}
+
+.w-8 {
+  width: 2rem;
 }
 
 .min-w-\[24px\] {
@@ -1187,6 +1203,11 @@ body {
 
 .bg-white\/90 {
   background-color: rgb(255 255 255 / 0.9);
+}
+
+.bg-gray-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 
 .bg-opacity-60 {
@@ -1692,6 +1713,11 @@ body {
   background-color: rgb(255 255 255 / 0.2);
 }
 
+.hover\:bg-gray-300:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
+}
+
 .hover\:text-black:hover {
   --tw-text-opacity: 1;
   color: rgb(0 0 0 / var(--tw-text-opacity));
@@ -1876,6 +1902,10 @@ body {
 
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .md\:text-4xl {

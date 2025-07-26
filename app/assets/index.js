@@ -17,28 +17,3 @@ window.carousel = function () {
     },
   };
 };
-
-export function bookingCalculator() {
-  const servicePrices = JSON.parse(
-    document.getElementById("service-data").textContent
-  );
-  const baseRate = parseFloat(document.getElementById("base-rate").value);
-  const nights = parseInt(document.getElementById("nights-count").value);
-
-  return {
-    guests: 1,
-    services: [],
-    get baseTotal() {
-      return baseRate * this.guests * nights;
-    },
-    get servicesTotal() {
-      return this.services.reduce((sum, id) => {
-        return sum + (servicePrices[id] || 0);
-      }, 0);
-    },
-    get total() {
-      return (this.baseTotal + this.servicesTotal).toFixed(2);
-    },
-  };
-}
-window.bookingCalculator = bookingCalculator;

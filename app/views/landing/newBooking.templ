@@ -2,37 +2,52 @@ package landing
 
 import (
 	"explorer/app/types"
+	"fmt"
 	"strconv"
 	"time"
-
-	"fmt"
 )
 
 templ NewBooking(camp types.CampSite, user types.User, allService []types.Service) {
-	<div x-data="{ termsOpen: false }">
+	{{ servicesMap := map[string]float64{} }}
+	{{ serviceQuantity := map[string]int{} }}
+	{{for _, s := range allService {
+	servicesMap[strconv.Itoa(s.ID)] = s.Price
+	serviceQuantity[strconv.Itoa(s.ID)] = 0
+}
+	}}
+	{{data := map[string]interface{}{
+	"campPrice":    camp.Price,
+	"guests":       0,
+	"services":     serviceQuantity,
+	"servicesData": servicesMap,
+	"termsOpen":    false,
+}
+	}}
+	<div
+		x-data={ templ.JSONString(data) }
+		x-init={ `total = () => {
+			const guestsFactor = 1 + Number(guests);
+			let servicesTotal = 0;
+			for (const id in services) {
+				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+			}
+			return (campPrice * guestsFactor + servicesTotal).toFixed(2);
+		}` }
+	>
 		<section class="relative min-h-screen">
-			<!-- Background Image -->
+			<!-- Background and form layout -->
 			<div class="absolute inset-0 z-0">
 				<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')"></div>
 				<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
 			</div>
-			<!-- Foreground Form Content -->
 			<div class="relative z-10 min-h-screen py-12 px-4 flex items-center justify-center">
 				<div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white/90 backdrop-blur-md rounded-lg p-6 shadow-lg">
-					<!-- Main Form -->
+					<!-- Booking Form -->
 					<div class="lg:col-span-2">
 						<div class="bg-white rounded-lg shadow-md overflow-hidden">
 							<div class="bg-green-700 text-white p-6">
 								<h1 class="text-2xl font-bold flex items-center gap-2">
-									<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m4 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-6 9l2 2 4-4"
-										></path>
-									</svg>
-									Book Your Camping Adventure
+									📅 Book Your Camping Adventure
 								</h1>
 								<p class="text-green-100">Fill out the form below to reserve your perfect camping spot</p>
 							</div>
@@ -41,49 +56,37 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 							</div>
 						</div>
 					</div>
-					<!-- Sidebar -->	
-					<div 
-					x-data={`{
-								campPrice: ${fmt.Sprintf("%.2f", camp.PricePerNight)},
-								guests: 0,
-								services: [],
-								servicesData: {
-									{{ for _, s := range allService }}
-										{{ s.ID }}: {{ fmt.Sprintf("%.2f", s.Price) }},
-									{{ end }}
-								},
-								get total() {
-									const guestsFactor = 1 + Number(this.guests);
-									const servicesTotal = this.services.reduce((sum, id) => sum + this.servicesData[id], 0);
-									return (this.campPrice * guestsFactor + servicesTotal).toFixed(2);
-								}
-							}`}
-					>
+					<!-- Booking Summary -->
+					<div>
 						<div class="shadow-lg bg-white rounded-lg sticky top-8 p-5 space-y-4">
-							<h2 class="text-lg font-semibold flex items-center gap-2">
-								<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-								</svg>
-								Booking Summary
-							</h2>
+							<h2 class="text-lg font-semibold flex items-center gap-2">🧾 Booking Summary</h2>
 							<div class="text-sm text-gray-600 space-y-2">
 								<div class="flex justify-between">
-									<span>Base Rate </span>
-									<span class="font-medium">{ fmt.Sprintf("%.2f",camp.Price) } TND</span>
+									<span>Base Rate</span>
+									<span class="font-medium">{ fmt.Sprintf("%.2f", camp.Price) } TND</span>
 								</div>
 								<div class="flex justify-between">
-									<span>Number Of Guests </span>
+									<span>Guests</span>
 									<span class="font-medium" x-text="guests"></span>
 								</div>
 								<div class="flex justify-between">
-									<span>Additional Services</span>
-									<span class="font-medium" x-text="servicesTotal.toFixed(2)+ ' TND'"></span>
+									<span>Services</span>
+									<span
+										class="font-medium"
+										x-text="(() => {
+										let sum = 0;
+										for (const id in services) {
+											sum += (services[id] || 0) * (servicesData[id] || 0);
+										}
+										return sum.toFixed(2);
+									})() + ' TND'"
+									></span>
 								</div>
 							</div>
 							<div class="border-t pt-2 mt-2">
 								<div class="flex justify-between text-lg font-semibold">
 									<span>Total</span>
-									<span class="text-green-800 font-bold" x-text={ fmt.Sprintf("(guests * %.2f + serviceTotal).toFixed(2) TND", camp.Price) }></span>
+									<span class="text-green-800 font-bold" x-text="total() + ' TND'"></span>
 								</div>
 							</div>
 						</div>
@@ -101,6 +104,8 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<input type="hidden" name="startDate" value={ camp.AvailableFrom.Format("2006-01-02") }/>
 		<input type="hidden" name="endDate" value={ camp.AvailableTo.Format("2006-01-02") }/>
 		<input type="hidden" name="bookingDate" value={ time.Now().Format("2006-01-02") }/>
+		<input type="hidden" name="totalPrice" :value="total()"/>
+		<input type="hidden" name="guestsCount" :value="guests"/>
 		<!-- User Profile Info -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
@@ -129,6 +134,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 			<select
 				name="guests"
 				id="guests"
+				x-model="guests"
 				required
 				class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
 			>
@@ -138,23 +144,52 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 				}
 				<option value="10+">10+</option>
 			</select>
+			<!-- Guest Details Section -->
+			<div class="mt-6 space-y-4">
+				<template x-for="i in Number(guests)">
+					<div class="p-4 border rounded-lg bg-gray-50 space-y-2">
+						<h4 class="font-semibold text-sm text-gray-700">Guest <span x-text="i"></span></h4>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<input type="text" :name="'guests[' + (i-1) + '][first_name]'" placeholder="First Name" required class="w-full border px-3 py-2 rounded-md"/>
+							<input type="text" :name="'guests[' + (i-1) + '][last_name]'" placeholder="Last Name" required class="w-full border px-3 py-2 rounded-md"/>
+							<input type="text" :name="'guests[' + (i-1) + '][cin]'" placeholder="CIN (optional)" class="w-full border px-3 py-2 rounded-md"/>
+						</div>
+					</div>
+				</template>
+			</div>
 		</div>
 		<!-- Additional Services -->
 		<div>
 			<h3 class="text-sm font-semibold text-gray-800 mb-2">Additional Services</h3>
 			<div class="space-y-3 text-sm text-gray-700">
 				for _, s := range Allservice {
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="Services"
-							value={ strconv.Itoa(s.ID) }
-							x-model="services"
-							class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-							@change={ fmt.Sprintf("servicesTotal += $event.target.checked ? %d: -%d", s.Price, s.Price) }
-						/>
-						<span>{ s.Name } +TND ({ fmt.Sprintf("%.2f",s.Price) })</span>
-					</label>
+					<input type="hidden" name={ fmt.Sprintf("service[%d]", s.ID) } :value={ fmt.Sprintf("services[%d]", s.ID) }/>
+					<div class="flex items-center justify-between gap-4 border p-3 rounded-md shadow-sm">
+						<!-- Service name and price -->
+						<div class="flex-1">
+							<div class="font-medium text-gray-800">{ s.Name }</div>
+							<div class="text-xs text-gray-500">TND { fmt.Sprintf("%.2f", s.Price) } each</div>
+						</div>
+						<!-- Quantity controls -->
+						<div class="flex items-center gap-2">
+							<button
+								type="button"
+								class="w-8 h-8 bg-gray-200 hover:bg-gray-300 text-lg rounded-md"
+								@click={ fmt.Sprintf("services[%d] = Math.max(0, (services[%d] || 0) - 1); services = { ...services }", s.ID, s.ID) }
+							>-</button>
+							<input
+								type="text"
+								min="0"
+								x-model.number={ fmt.Sprintf("services[%d]", s.ID) }
+								class="w-16 text-center border border-gray-300 rounded-md py-1"
+							/>
+							<button
+								type="button"
+								class="w-8 h-8 bg-gray-200 hover:bg-gray-300 text-lg rounded-md"
+								@click={ fmt.Sprintf("services[%d] = (services[%d] || 0) + 1; services = { ...services }", s.ID, s.ID) }
+							>+</button>
+						</div>
+					</div>
 				}
 			</div>
 		</div>
