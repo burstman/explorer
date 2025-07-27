@@ -16,11 +16,13 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 }
 	}}
 	{{data := map[string]interface{}{
-	"campPrice":    camp.Price,
-	"guests":       0,
-	"services":     serviceQuantity,
-	"servicesData": servicesMap,
-	"termsOpen":    false,
+	"campPrice":        camp.Price,
+	"guests":           0,
+	"services":         serviceQuantity,
+	"servicesData":     servicesMap,
+	"termsOpen":        false,
+	"showPaymentModal": false,
+	"paymentMethod":    "",
 }
 	}}
 	<div
@@ -32,6 +34,10 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
 			}
 			return (campPrice * guestsFactor + servicesTotal).toFixed(2);
+			submitBooking = (method) => {
+  				paymentMethod = method;
+  				$nextTick(() => { $refs.bookingForm.submit(); });
+			};
 		}` }
 	>
 		<section class="relative min-h-screen">
@@ -94,11 +100,16 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 				</div>
 			</div>
 		</section>
+		@PaymentMethod()
 	</div>
 }
 
 templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Service) {
-	<form method="POST" action="/book" class="space-y-6">
+	<form
+		x-ref="bookingForm"
+		@submit.prevent="showPaymentModal = true"
+		class="space-y-6"
+	>
 		<!-- Hidden Fields -->
 		<input type="hidden" name="campID" value={ strconv.Itoa(camp.ID) }/>
 		<input type="hidden" name="startDate" value={ camp.AvailableFrom.Format("2006-01-02") }/>
@@ -106,6 +117,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<input type="hidden" name="bookingDate" value={ time.Now().Format("2006-01-02") }/>
 		<input type="hidden" name="totalPrice" :value="total()"/>
 		<input type="hidden" name="guestsCount" :value="guests"/>
+		<input type="hidden" name="payment_method" :value="paymentMethod"/>
 		<!-- User Profile Info -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
@@ -198,53 +210,35 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 			<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
 			<textarea name="specialRequest" id="specialRequest" rows="3" placeholder="Any special requests?" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
 		</div>
-		<!-- Agreements -->
-		<div class="space-y-3 text-sm text-gray-700">
-			<label class="flex items-start gap-2 text-sm mt-4">
-				<input type="checkbox" name="agree_terms" required class="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
-				<span>
-					I have read and agree to the 
-					<button type="button" @click="termsOpen = true" class="text-green-700 underline hover:text-green-500">Terms and Conditions</button>
-				</span>
-			</label>
-		</div>
 		<!-- Submit Button -->
 		<div>
 			<button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md">
-				📅 Confirm Booking
+				📅 Confirm Bookingj
 			</button>
 		</div>
 	</form>
-	@terms()
 }
 
-templ terms() {
-	<!-- Modal backdrop -->
+templ PaymentMethod() {
+	<!-- Payment Method Modal -->
 	<div
-		x-show="termsOpen"
+		x-show="showPaymentModal"
 		x-transition
-		class="fixed inset-0 bg-black/50 z-40"
-		@click="termsOpen = false"
-	></div>
-	<!-- Modal content -->
-	<div
-		x-show="termsOpen"
-		x-transition
-		class="fixed inset-0 flex items-center justify-center z-50"
-		style="backdrop-filter: blur(2px);"
+		class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
 	>
-		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
-			<button @click="termsOpen = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-lg font-bold">✖</button>
-			<h2 class="text-xl font-bold mb-4">Terms and Conditions</h2>
-			<div class="text-sm max-h-[60vh] overflow-y-auto space-y-3 text-gray-700">
-				<p><strong>1. Booking Policy:</strong> All reservations are subject to availability. Full payment is required at the time of booking.</p>
-				<p><strong>2. Cancellations:</strong> Cancellations made 48 hours before the check-in date will receive a full refund. No refunds for cancellations after this period.</p>
-				<p><strong>3. Check-in & Check-out:</strong> Standard check-in is at 2 PM and check-out is at 11 AM. Early check-in must be selected and paid for in advance.</p>
-				<p><strong>4. Liability:</strong> We are not responsible for personal injuries, lost or stolen items, or damages to personal property during your stay.</p>
-				<p><strong>5. Code of Conduct:</strong> Guests must respect the campsite, nature, and fellow guests. Any disruptive behavior may result in immediate eviction without a refund.</p>
-				<p><strong>6. Services:</strong> Additional services (equipment rental, guided tours, firewood, early check-in) must be booked in advance and are non-refundable once the stay begins.</p>
-				<p><strong>7. Weather Disclaimer:</strong> Outdoor conditions are subject to change. No refunds for weather-related changes unless the campsite is deemed unsafe by management.</p>
-				<p><strong>8. Agreement:</strong> By submitting the booking form, you acknowledge that you have read, understood, and agreed to these terms.</p>
+		<div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4 relative">
+			<button @click="showPaymentModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-xl font-bold">×</button>
+			<h2 class="text-xl font-bold">Choose Payment Method</h2>
+			<p class="text-sm text-gray-600">Please select how you'd like to pay for your booking.</p>
+			<div class="space-y-2">
+				<button
+					@click="submitBooking('cash')"
+					class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+				>💵 Pay with Cash</button>
+				<button
+					@click="submitBooking('online')"
+					class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+				>💳 Pay Online</button>
 			</div>
 		</div>
 	</div>

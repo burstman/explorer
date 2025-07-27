@@ -24,7 +24,9 @@ type SignupFormValues struct {
 }
 
 templ SignupIndex(data SignupIndexPageData) {
+	
 	@layouts.BaseLayout() {
+	<div x-data="{ termsOpen : false }">
 		<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
 			<!-- Optional: dark overlay -->
 			<div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
@@ -38,6 +40,7 @@ templ SignupIndex(data SignupIndexPageData) {
 				</div>
 			</div>
 		</section>
+		</div>
 	}
 }
 
@@ -127,7 +130,20 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 		<a class="text-sm underline cursor-pointer" hx-get="/login" hx-target="#main-content" hx-swap="innerHTML">
 			Already have an account? Login here.
 		</a>
+
+		<!-- Agreements -->
+	<div class="space-y-3 text-sm text-gray-700">
+			<label class="flex items-start gap-2 text-sm mt-4">
+				<input type="checkbox" name="agree_terms" required class="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+				<span>
+					I have read and agree to the 
+					<button type="button" @click="termsOpen = true" class="text-green-700 underline hover:text-green-500">Terms and Conditions</button>
+				</span>
+			</label>
+		</div>
+
 	</form>
+	@terms()
 }
 
 templ ConfirmEmail(user types.User) {
@@ -136,4 +152,38 @@ templ ConfirmEmail(user types.User) {
 		<div>An email confirmation link has been sent to: <span class="underline font-medium">{ user.Email }</span></div>
 		<div>Trouble receiving the verification code? <button class="underline font-medium cursor-pointer">Resend verification code</button></div>
 	</form>
+}
+
+
+
+templ terms() {
+	<!-- Modal backdrop -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 bg-black/50 z-40"
+		@click="termsOpen = false"
+	></div>
+	<!-- Modal content -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 flex items-center justify-center z-50"
+		style="backdrop-filter: blur(2px);"
+	>
+		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
+			<button @click="termsOpen = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-lg font-bold">✖</button>
+			<h2 class="text-xl font-bold mb-4">Terms and Conditions</h2>
+			<div class="text-sm max-h-[60vh] overflow-y-auto space-y-3 text-gray-700">
+				<p><strong>1. Booking Policy:</strong> All reservations are subject to availability. Full payment is required at the time of booking.</p>
+				<p><strong>2. Cancellations:</strong> Cancellations made 48 hours before the check-in date will receive a full refund. No refunds for cancellations after this period.</p>
+				<p><strong>3. Check-in & Check-out:</strong> Standard check-in is at 2 PM and check-out is at 11 AM. Early check-in must be selected and paid for in advance.</p>
+				<p><strong>4. Liability:</strong> We are not responsible for personal injuries, lost or stolen items, or damages to personal property during your stay.</p>
+				<p><strong>5. Code of Conduct:</strong> Guests must respect the campsite, nature, and fellow guests. Any disruptive behavior may result in immediate eviction without a refund.</p>
+				<p><strong>6. Services:</strong> Additional services (equipment rental, guided tours, firewood, early check-in) must be booked in advance and are non-refundable once the stay begins.</p>
+				<p><strong>7. Weather Disclaimer:</strong> Outdoor conditions are subject to change. No refunds for weather-related changes unless the campsite is deemed unsafe by management.</p>
+				<p><strong>8. Agreement:</strong> By submitting the booking form, you acknowledge that you have read, understood, and agreed to these terms.</p>
+			</div>
+		</div>
+	</div>
 }

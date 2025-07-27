@@ -110,7 +110,7 @@ func HandleBookNew(kit *kit.Kit) error {
 
 	campID := chi.URLParam(kit.Request, "campID")
 
-	var camp types.CampSite
+var camp types.CampSite
 	var user types.User
 	err := db.Get().Where("id = ?", campID).First(&camp).Error
 	if err != nil {
