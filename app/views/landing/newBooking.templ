@@ -213,7 +213,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<!-- Submit Button -->
 		<div>
 			<button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md">
-				📅 Confirm Bookingj
+				📅 Confirm Booking
 			</button>
 		</div>
 	</form>
@@ -229,7 +229,8 @@ templ PaymentMethod() {
 		<div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4 relative">
 			<button @click="showPaymentModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-xl font-bold">×</button>
 			<h2 class="text-xl font-bold">Choose Payment Method</h2>
-			<p class="text-sm text-gray-600">Please select how you'd like to pay for your booking.</p>
+			<p class="text-sm text-gray-600">Please assure that all your information are correct!</p>
+			<p class="text-sm text-gray-600">How you'd like to pay for your booking?</p>
 			<div class="space-y-2">
 				<button
 					@click="submitBooking('cash')"
