@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE guests (
+CREATE TABLE guest (
 	id SERIAL PRIMARY KEY,
 	first_name TEXT NOT NULL,
 	last_name TEXT NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE guests (
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS guests;
+DROP TABLE IF EXISTS guest;
 
