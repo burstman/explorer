@@ -4,6 +4,7 @@ import (
 	"explorer/app/handlers"
 	"explorer/app/views/errors"
 	"explorer/plugins/auth"
+	"explorer/plugins/booking"
 	buses "explorer/plugins/busesConfig"
 	"explorer/plugins/campsite"
 	"explorer/plugins/services"
@@ -74,6 +75,7 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
 		app.Post("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteUpdate))
 		app.Post("/admin/services/create", kit.Handler(services.HandleServiceCreate))
+		app.Post("/user/bookings",kit.Handler(booking.HandelCreateBooking))
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))

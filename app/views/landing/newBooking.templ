@@ -23,6 +23,7 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 	"termsOpen":        false,
 	"showPaymentModal": false,
 	"paymentMethod":    "",
+	"showConfirmModal": false,
 }
 	}}
 	<div
@@ -101,6 +102,7 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 			</div>
 		</section>
 		@PaymentMethod()
+		@ConfirmationCachPayement()
 	</div>
 }
 
@@ -220,26 +222,76 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 }
 
 templ PaymentMethod() {
-	<!-- Payment Method Modal -->
 	<div
 		x-show="showPaymentModal"
 		x-transition
-		class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
 	>
-		<div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 space-y-4 relative">
-			<button @click="showPaymentModal = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-xl font-bold">×</button>
-			<h2 class="text-xl font-bold">Choose Payment Method</h2>
-			<p class="text-sm text-gray-600">Please assure that all your information are correct!</p>
-			<p class="text-sm text-gray-600">How you'd like to pay for your booking?</p>
-			<div class="space-y-2">
-				<button
-					@click="submitBooking('cash')"
-					class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-				>💵 Pay with Cash</button>
-				<button
-					@click="submitBooking('online')"
-					class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-				>💳 Pay Online</button>
+		<div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+			<button
+				@click="showPaymentModal = false"
+				class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold"
+			>
+				&times;
+			</button>
+			<h2 class="text-xl font-bold text-gray-800 mb-4">Choose Payment Method</h2>
+			<p class="text-sm text-gray-600 mb-6">Please select how you'd like to pay for your booking:</p>
+			<!-- ✅ Pay with Cash: Triggers form submit -->
+			<button
+				type="button"
+				@click="showPaymentModal = false; showConfirmModal = true"
+				class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded mb-4"
+			>
+				💵 Pay with Cash (on site)
+			</button>
+			<!-- 💳 Online Disabled -->
+			<button
+				disabled
+				class="w-full bg-gray-300 text-gray-600 py-2 px-4 rounded cursor-not-allowed"
+			>
+				💳 Pay Online (Coming Soon)
+			</button>
+		</div>
+	</div>
+}
+
+templ ConfirmationCachPayement() {
+	<div>
+		<!-- Modal Backdrop -->
+		<div
+			x-show="showConfirmModal"
+			x-transition
+			class="fixed inset-0 bg-black/50 z-40"
+			@click="showConfirmModal = false"
+		></div>
+		<!-- Modal Content -->
+		<div
+			x-show="showConfirmModal"
+			x-transition
+			class="fixed inset-0 z-50 flex items-center justify-center"
+			style="backdrop-filter: blur(3px);"
+		>
+			<div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full space-y-4">
+				<h2 class="text-xl font-bold text-center text-gray-800">Confirm Your Booking</h2>
+				<p class="text-gray-600 text-sm text-center">Are you sure you want to book with cash payment? An admin will need to confirm it.</p>
+				<div class="flex justify-center gap-4 mt-4">
+					<!-- Cancel -->
+					<button
+						@click="showConfirmModal = false"
+						type="button"
+						class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md"
+					>
+						No
+					</button>
+					<!-- Confirm / Submit the actual form -->
+					<button
+						type="button"
+						@click="submitBooking('cash')"
+						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+					>
+						Yes, Confirm
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
