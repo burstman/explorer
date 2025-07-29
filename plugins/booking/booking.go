@@ -63,11 +63,14 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	}
 
 	// Parse services
-	for k, v := range r.Form {
+	for k, v := range kit.Request.Form {
 		if strings.HasPrefix(k, "service[") {
 			idStr := strings.TrimSuffix(strings.TrimPrefix(k, "service["), "]")
 			serviceID, _ := strconv.Atoi(idStr)
-			qty, _ := strconv.Atoi(v[0])
+			qty, err := strconv.Atoi(v[0])
+			if err != nil {
+				return err
+			}
 			if qty > 0 {
 				booking.Services = append(booking.Services, types.BookingService{
 					ServiceID: uint(serviceID),
@@ -78,13 +81,12 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	}
 
 	// Create booking with nested associations
-	if err := db.Create(&booking).Error; err != nil {
-		http.Error(w, "Failed to create booking", http.StatusInternalServerError)
-		return
+	if err := db.Get().Create(&booking).Error; err != nil {
+
+		return err
 	}
 
-	// Success (HTMX or redirect)
-	w.Header().Set("HX-Redirect", "/bookings/success")
+	return kit.Redirect(http.StatusSeeOther, "/")
 }
 
 func getCurrentUserID(kit *kit.Kit) (uint, error) {

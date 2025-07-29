@@ -285,8 +285,10 @@ templ ConfirmationCachPayement() {
 					</button>
 					<!-- Confirm / Submit the actual form -->
 					<button
-						type="button"
-						@click="submitBooking('cash')"
+						hx-post="/user/bookings"
+						hx-include="[x-ref='bookingForm']"
+						hx-target="body"
+						hx-swap="innerHTML"
 						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
 					>
 						Yes, Confirm
