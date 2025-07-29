@@ -19,7 +19,7 @@ templ ServiceConfigModal(services []types.Service) {
 					<strong>{ service.Name }</strong> - { fmt.Sprintf("%.2f", service.Price) } TND
 				</span>
 				<form
-					hx-post={ "/admin/services/" + strconv.Itoa(service.ID) + "/delete" }
+					hx-post={ "/admin/services/" + strconv.Itoa(int(service.ID)) + "/delete" }
 					hx-target="#modal-content"
 					hx-swap="innerHTML"
 					onsubmit="return confirm('Are you sure you want to delete this service?')"

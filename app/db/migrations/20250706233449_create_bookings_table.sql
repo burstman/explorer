@@ -6,8 +6,11 @@ CREATE TABLE bookings (
 	special_request TEXT,
 	total_price DECIMAL(10, 2),
 	status TEXT DEFAULT 'pending',
-	payment_status TEXT DEFAULT 'pending', 
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	payment_status TEXT DEFAULT 'pending',
+	payment_method TEXT, 
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+	deleted_at TIMESTAMP
 );
 -- +goose Down
 DROP TABLE IF EXISTS bookings;

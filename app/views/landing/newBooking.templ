@@ -11,8 +11,8 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 	{{ servicesMap := map[string]float64{} }}
 	{{ serviceQuantity := map[string]int{} }}
 	{{for _, s := range allService {
-	servicesMap[strconv.Itoa(s.ID)] = s.Price
-	serviceQuantity[strconv.Itoa(s.ID)] = 0
+	servicesMap[strconv.Itoa(int(s.ID))] = s.Price
+	serviceQuantity[strconv.Itoa(int(s.ID))] = 0
 }
 	}}
 	{{data := map[string]interface{}{
@@ -284,15 +284,23 @@ templ ConfirmationCachPayement() {
 						No
 					</button>
 					<!-- Confirm / Submit the actual form -->
-					<button
-						hx-post="/user/bookings"
-						hx-include="[x-ref='bookingForm']"
-						hx-target="body"
-						hx-swap="innerHTML"
-						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-					>
-						Yes, Confirm
-					</button>
+					// <button
+					// 	hx-post="/user/bookings"
+					// 	hx-include="[x-ref='bookingForm']"
+					// 	hx-target="body"
+					// 	hx-swap="innerHTML"
+					// 	class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+					// >
+					// 	Yes, Confirm
+					// </button>
+					<form method="GET" action="/user/bookings/status">
+						<button
+							type="submit"
+							class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
+						>
+							Yes, Confirm
+						</button>
+					</form>
 				</div>
 			</div>
 		</div>

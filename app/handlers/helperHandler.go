@@ -4,6 +4,7 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/layouts"
 	"fmt"
+	"log"
 
 	"github.com/a-h/templ"
 	"github.com/anthdm/superkit/kit"
@@ -20,16 +21,19 @@ func RenderWithLayout(kit *kit.Kit, content templ.Component) error {
 	}
 	isLoggedIn := kit.Auth().Check()
 	var role string
-	
+	var userId uint
 	if isLoggedIn {
 		// Get the authenticated user and extract the role
-		if user,ok := kit.Auth().(types.AuthUser); ok {
+		if user, ok := kit.Auth().(types.AuthUser); ok {
 			role = user.GetRole()
+			userId = user.GetUserID()
+
 		}
 	}
-	fmt.Println("role in render with layout", role)
-	fmt.Println("is loggedin", isLoggedIn)
-	
+	log.Println("role in render with layout", role)
+	log.Println("userid in render with layout", userId)
 
-	return kit.Render(layouts.App(content, role, isLoggedIn))
+	fmt.Println("is loggedin", isLoggedIn)
+
+	return kit.Render(layouts.App(content, role, isLoggedIn, userId))
 }

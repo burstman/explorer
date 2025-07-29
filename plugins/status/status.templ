@@ -1,0 +1,60 @@
+package status
+
+import (
+	"explorer/app/types"
+	"fmt"
+)
+
+templ BookingStatusPage(booking types.Bookings, camp types.CampSite) {
+	<!-- Fullscreen Background Image -->
+	<div class="absolute inset-0 -z-10">
+		<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+			<div class="w-full h-full bg-gradient-to-b from-black/60 to-black/30"></div>
+		</div>
+	</div>
+	<!-- Foreground Content -->
+	<section class="relative z-10 max-w-3xl mx-auto mt-12 p-6 bg-white/90 rounded-lg shadow-md backdrop-blur">
+		<h1 class="text-2xl font-bold text-center mb-6">📋 Booking Status</h1>
+		<div class="space-y-2 text-sm text-gray-700 mb-6">
+			//<p><strong>Booking ID:</strong> { booking.ID }</p>
+			<p><strong>Campsite:</strong> { camp.Name }</p>
+			<p><strong>Status:</strong> <span class="font-semibold text-blue-700">{ booking.Status }</span></p>
+			<p><strong>Payment Status:</strong> <span class="font-semibold text-green-700">{ booking.PaymentStatus }</span></p>
+			<p><strong>Payment Method:</strong> { booking.PaymentMethod }</p>
+			<p><strong>Total Price:</strong> { fmt.Sprintf("%.2f TND", booking.TotalPrice) }</p>
+			<p><strong>Special Request:</strong> { booking.SpecialRequest }</p>
+		</div>
+		<hr class="my-4"/>
+		<h2 class="text-lg font-semibold text-gray-800 mb-2">👤 Guests</h2>
+		<ul class="space-y-2 text-sm text-gray-700 mb-6">
+			for _, guest := range booking.Guests {
+				<li class="border p-3 rounded-md">
+					<strong>{ guest.FirstName } { guest.LastName }</strong>
+					if guest.CIN != "" {
+						<p>CIN: { guest.CIN }</p>
+					}
+				</li>
+			}
+		</ul>
+		<h2 class="text-lg font-semibold text-gray-800 mb-2">🧰 Services</h2>
+		if len(booking.Services) > 0 {
+			<ul class="space-y-2 text-sm text-gray-700">
+				for _, bs := range booking.Services {
+					<li class="border p-3 rounded-md flex justify-between items-center">
+						<span>{ bs.Service.Name } × { bs.Quantity }</span>
+						<span class="text-right text-gray-500">
+							{ fmt.Sprintf("%.2f TND", float64(bs.Quantity) * bs.Service.Price) }
+						</span>
+					</li>
+				}
+			</ul>
+		} else {
+			<p class="text-gray-500">No services selected.</p>
+		}
+		<div class="mt-8 text-center">
+			<a href="/user/bookings" class="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+				🔙 Back to My Bookings
+			</a>
+		</div>
+	</section>
+}

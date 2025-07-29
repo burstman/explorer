@@ -29,4 +29,6 @@ type BookingService struct {
 	BookingID uint
 	ServiceID uint
 	Quantity  int
+
+	Service Service `gorm:"foreignKey:ServiceID"`
 }

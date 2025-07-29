@@ -88,32 +88,15 @@ templ Navigation(Role string, isLoggedIn bool) {
 											List
 										</a>
 									}
-									// <a
-									// 	href="/book-cancel"
-									// 	class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									// >
-									// 	Cancel
-									// 	Booking
-									// </a>
-									// <a
-									// 	href="/book-schedules"
-									// 	class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									// >
-									// 	Booking
-									// 	schedules
-									// </a>
-									// <a
-									// 	href="/book-search-tent"
-									// 	class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									// >Searchfor a tent</a>
+									if Role=="user" {
+										<a
+											href="/user/bookings/status"
+											class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
+										>
+											Booking-Status
+										</a>
+									}
 								}
-								<a
-									href="/book-offers"
-									class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-								>
-									Special
-									Offer
-								</a>
 							</div>
 						</div>
 					</div>

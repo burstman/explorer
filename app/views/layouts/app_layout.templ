@@ -2,7 +2,7 @@ package layouts
 
 import "explorer/app/views/components"
 
-templ App(content templ.Component, role string, isLoggedIn bool) {
+templ App(content templ.Component, role string, isLoggedIn bool, userID uint) {
 	@BaseLayout() {
 		<!-- Global Alpine scope for modal -->
 		<div

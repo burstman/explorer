@@ -26,6 +26,10 @@ func (user AuthUser) GetRole() string {
 	return user.Role
 }
 
+func (user AuthUser) GetUserID() uint {
+	return user.UserID
+}
+
 func (user AuthUser) GetFirstName() string {
 	return user.FirstName
 }

@@ -8,6 +8,7 @@ import (
 	buses "explorer/plugins/busesConfig"
 	"explorer/plugins/campsite"
 	"explorer/plugins/services"
+	"explorer/plugins/status"
 	"log/slog"
 
 	"github.com/anthdm/superkit/kit"
@@ -70,12 +71,13 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteEditForm))
 		app.Get("/admin/buses", kit.Handler(buses.HandleModal))
 		app.Get("/admin/services", kit.Handler(services.HandleServices))
+		app.Get("/user/bookings/status", kit.Handler(status.BookingHandler))
 
 		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
 		app.Post("/admin/campsites/edit/{ID}", kit.Handler(campsite.HandleCampsiteUpdate))
 		app.Post("/admin/services/create", kit.Handler(services.HandleServiceCreate))
-		app.Post("/user/bookings",kit.Handler(booking.HandelCreateBooking))
+		app.Post("/user/bookings", kit.Handler(booking.HandelCreateBooking))
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))
