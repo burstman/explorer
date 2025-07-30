@@ -57,6 +57,7 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/photo+view", kit.Handler(handlers.HandlePhotoView))
 		app.Get("/AreaAttraction", kit.Handler(handlers.HandleCampSites))
 		app.Get("/book-new/{campID}", kit.Handler(handlers.HandleBookNew))
+		app.Get("/booking/list", kit.Handler(handlers.HandelBooklist))
 	})
 
 	// Authenticated routes

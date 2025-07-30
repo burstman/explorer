@@ -24,22 +24,21 @@ type SignupFormValues struct {
 }
 
 templ SignupIndex(data SignupIndexPageData) {
-	
 	@layouts.BaseLayout() {
-	<div x-data="{ termsOpen : false }">
-		<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
-			<!-- Optional: dark overlay -->
-			<div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-			<!-- Centered Signup Card -->
-			<div class="relative z-10 flex justify-center items-start pt-24 px-4 pb-16">
-				<div class="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-8">
-					<h2 class="text-center text-2xl font-bold text-gray-800">Signup</h2>
-					<div class="mt-6">
-						@SignupForm(data.FormValues, data.FormErrors)
+		<div x-data="{ termsOpen : false }">
+			<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+				<!-- Optional: dark overlay -->
+				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+				<!-- Centered Signup Card -->
+				<div class="relative z-10 flex justify-center items-center px-4 py-24 min-h-screen">
+					<div class="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-8">
+						<h2 class="text-center text-2xl font-bold text-gray-800">Signup</h2>
+						<div class="mt-6">
+							@SignupForm(data.FormValues, data.FormErrors)
+						</div>
 					</div>
 				</div>
-			</div>
-		</section>
+			</section>
 		</div>
 	}
 }
@@ -54,31 +53,32 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
 		</div>
-		<!-- First Name -->
-		<div class="flex flex-col gap-1">
-			<label for="firstName">First Name *</label>
-			<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
-			if errors.Has("firstName") {
-				<ul>
-					for _, err := range errors.Get("firstName") {
-						<li class="text-red-500 text-xs">{ err }</li>
-					}
-				</ul>
-			}
-		</div>
-		<!-- Last Name -->
-		<div class="flex flex-col gap-1">
-			<label for="lastName">Last Name *</label>
-			<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
-			if errors.Has("lastName") {
-				<ul>
-					for _, err := range errors.Get("lastName") {
-						<li class="text-red-500 text-xs">{ err }</li>
-					}
-				</ul>
-			}
-		</div>
-		<!-- Phone Number -->
+		<div class="flex gap-4">
+			<!-- First Name -->
+			<div class="flex flex-col gap-1 w-1/2">
+				<label for="firstName">First Name *</label>
+				<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
+				if errors.Has("firstName") {
+					<ul>
+						for _, err := range errors.Get("firstName") {
+							<li class="text-red-500 text-xs">{ err }</li>
+						}
+					</ul>
+				}
+			</div>
+			<!-- Last Name -->
+			<div class="flex flex-col gap-1 w-1/2">
+				<label for="lastName">Last Name *</label>
+				<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
+				if errors.Has("lastName") {
+					<ul>
+						for _, err := range errors.Get("lastName") {
+							<li class="text-red-500 text-xs">{ err }</li>
+						}
+					</ul>
+				}
+			</div>
+		</div> <!-- Phone Number -->
 		<div class="flex flex-col gap-1">
 			<label for="phoneNumber">Phone Number</label>
 			<input { inputAttrs(errors.Has("phoneNumber"))... } name="phoneNumber" id="phoneNumber" value={ values.PhoneNumber }/>
@@ -130,9 +130,8 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 		<a class="text-sm underline cursor-pointer" hx-get="/login" hx-target="#main-content" hx-swap="innerHTML">
 			Already have an account? Login here.
 		</a>
-
 		<!-- Agreements -->
-	<div class="space-y-3 text-sm text-gray-700">
+		<div class="space-y-3 text-sm text-gray-700">
 			<label class="flex items-start gap-2 text-sm mt-4">
 				<input type="checkbox" name="agree_terms" required class="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
 				<span>
@@ -141,7 +140,6 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 				</span>
 			</label>
 		</div>
-
 	</form>
 	@terms()
 }
@@ -153,8 +151,6 @@ templ ConfirmEmail(user types.User) {
 		<div>Trouble receiving the verification code? <button class="underline font-medium cursor-pointer">Resend verification code</button></div>
 	</form>
 }
-
-
 
 templ terms() {
 	<!-- Modal backdrop -->

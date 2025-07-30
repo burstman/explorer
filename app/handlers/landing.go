@@ -6,7 +6,6 @@ import (
 	"explorer/app/views/landing"
 
 	"log"
-	"net/http"
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/go-chi/chi/v5"
@@ -50,6 +49,11 @@ type SeatInfo struct {
 	TotalSeats int
 }
 
+type BookingInfo struct {
+	CampID      int
+	BookedSeats int
+}
+
 // HandleCampSites retrieves camp sites and renders the camp sites page with user role, site data, and optional flash messages
 func HandleCampSites(kit *kit.Kit) error {
 	var camps []types.CampSite
@@ -83,11 +87,27 @@ func HandleCampSites(kit *kit.Kit) error {
 		Scan(&seatData).Error
 	if err != nil {
 		log.Println("Failed to fetch camp site data:", err)
-		return kit.Text(http.StatusInternalServerError, "Failed to fetch camp site data")
+		return err
 	}
 
+	var bookings []BookingInfo
+
+	err = db.Get().Raw(`
+	SELECT 
+		b.camp_id,
+		COUNT(b.id) + COUNT(g.id) AS booked_seats
+	FROM bookings b
+	LEFT JOIN guests g ON g.booking_id = b.id
+	GROUP BY b.camp_id
+`).Scan(&bookings).Error
+
+	if err != nil {
+		log.Println("Failed to fetch booking data:", err)
+		return err
+	}
 	//map campsite id to total seat
 	totalSeatsMap := make(map[int]int)
+	bookedSeatsMap := make(map[int]int)
 
 	for _, row := range seatData {
 		totalSeatsMap[row.CampsiteID] = row.TotalSeats
@@ -97,7 +117,23 @@ func HandleCampSites(kit *kit.Kit) error {
 		log.Printf("Seats for Camp ID %d: %d", s.CampsiteID, s.TotalSeats)
 	}
 
-	return RenderWithLayout(kit, landing.CampSites(user, camps, buses, totalSeatsMap, flashType, flashMsg))
+	for _, b := range bookings {
+		bookedSeatsMap[b.CampID] = b.BookedSeats
+	}
+
+	remainingSeatsMap := make(map[int]int)
+	for campID, total := range totalSeatsMap {
+		booked := bookedSeatsMap[campID]
+		remaining := total - booked
+		if remaining < 0 {
+			remaining = 0 // safety
+		}
+		remainingSeatsMap[campID] = remaining
+	}
+	log.Printf("Booking data with guests: %+v", bookings)
+	log.Printf("Remaining seats per camp: %+v", remainingSeatsMap)
+
+	return RenderWithLayout(kit, landing.CampSites(user, camps, buses, remainingSeatsMap, flashType, flashMsg))
 }
 
 func HandleBookNew(kit *kit.Kit) error {

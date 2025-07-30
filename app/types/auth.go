@@ -5,7 +5,6 @@ import (
 	"errors"
 	"explorer/app/db"
 
-	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -57,9 +56,7 @@ func (user AuthUser) HasBooked(camp CampSite) bool {
 	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		// ❌ No booking found
 		return false
-	} else {
-		// 🔴 Some DB error
-		log.Println("DB error:", err)
+
 	}
 	return false
 

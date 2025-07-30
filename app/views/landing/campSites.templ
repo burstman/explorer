@@ -5,7 +5,6 @@ import (
 	"explorer/plugins/campsite"
 	"fmt"
 	"strconv"
-	func(s T) string
 )
 
 func getFlashStyle(flashType string) string {
@@ -84,14 +83,14 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 			<h2 class="text-xl font-bold text-green-900">{ camp.Name }</h2>
 			<p class="text-sm text-gray-700 mt-1">{ camp.Description }</p>
 			<p class="text-xs text-gray-500 mt-2">{ camp.Location }</p>
-			<p class="text-sm text-gray-600">Available Seats: { templ.EscapeString(func() string {
+			<p class="text-sm text-gray-600">
+				Available Seats: { templ.EscapeString(func() string {
 				if seatMap[camp.ID] > 0 {
 					return strconv.Itoa(seatMap[camp.ID])
 				}
 			return "Full"    
-			}
-				
-			) seatMap[camp.ID] }</p>
+			}()) }
+			</p>
 			<p class="text-xs text-gray-500 mt-2">
 				Available from: { templ.EscapeString(func() string {
 				if camp.AvailableFrom != nil {
