@@ -55,11 +55,7 @@ func HandleCampSites(kit *kit.Kit) error {
 	var camps []types.CampSite
 	db.Get().Order("title asc").Find(&camps)
 
-	user, ok := kit.Auth().(types.AuthUser)
-	var role string
-	if ok {
-		role = user.GetRole()
-	}
+	user, _ := kit.Auth().(types.AuthUser)
 
 	session := kit.GetSession("user-session")
 	successFlashes := session.Flashes("success")
@@ -101,7 +97,7 @@ func HandleCampSites(kit *kit.Kit) error {
 		log.Printf("Seats for Camp ID %d: %d", s.CampsiteID, s.TotalSeats)
 	}
 
-	return RenderWithLayout(kit, landing.CampSites(role, camps, buses, totalSeatsMap, flashType, flashMsg))
+	return RenderWithLayout(kit, landing.CampSites(user, camps, buses, totalSeatsMap, flashType, flashMsg))
 }
 
 func HandleBookNew(kit *kit.Kit) error {
@@ -110,7 +106,7 @@ func HandleBookNew(kit *kit.Kit) error {
 
 	campID := chi.URLParam(kit.Request, "campID")
 
-var camp types.CampSite
+	var camp types.CampSite
 	var user types.User
 	err := db.Get().Where("id = ?", campID).First(&camp).Error
 	if err != nil {

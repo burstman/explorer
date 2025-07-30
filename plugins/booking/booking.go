@@ -3,29 +3,24 @@ package booking
 import (
 	"explorer/app/db"
 	"explorer/app/types"
-	"explorer/plugins/auth"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/anthdm/superkit/kit"
 )
 
 func HandelCreateBooking(kit *kit.Kit) error {
-	// Parse form
-	if err := kit.Request.ParseForm(); err != nil {
 
+	
+	//  Parse form
+	if err := kit.Request.ParseForm(); err != nil {
 		return err
 	}
 
 	// Parse scalar fields
-	userID, err := getCurrentUserID(kit)
-	if err != nil {
-		return err
-	}
+	auth := kit.Auth().(types.AuthUser)
 	campID, err := strconv.Atoi(kit.Request.FormValue("campID"))
 	if err != nil {
 		return err
@@ -39,7 +34,7 @@ func HandelCreateBooking(kit *kit.Kit) error {
 
 	// Booking object
 	booking := types.Bookings{
-		UserID:         uint(userID),
+		UserID:         auth.UserID,
 		CampID:         uint(campID),
 		SpecialRequest: specialRequest,
 		TotalPrice:     totalPrice,
@@ -87,21 +82,4 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	}
 
 	return kit.Redirect(http.StatusSeeOther, "/")
-}
-
-func getCurrentUserID(kit *kit.Kit) (uint, error) {
-	sess := kit.GetSession("user-session")
-	token, ok := sess.Values["sessionToken"]
-	if !ok {
-		log.Println("token not found")
-		return 0, fmt.Errorf("token not found")
-	}
-	var session auth.Session
-	err := db.Get().
-		Preload("User").
-		Find(&session, "token = ? AND expires_at > ?", token, time.Now()).Error
-	if err != nil || session.ID == 0 {
-		return 0, err
-	}
-	return session.UserID, nil
 }

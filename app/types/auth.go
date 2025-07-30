@@ -2,6 +2,10 @@ package types
 
 import (
 	"database/sql"
+	"errors"
+	"explorer/app/db"
+
+	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -40,6 +44,25 @@ func (user AuthUser) HasRole(role string) bool {
 
 func (user AuthUser) IsAmin() bool {
 	return user.Role == "admin"
+}
+
+func (user AuthUser) HasBooked(camp CampSite) bool {
+	var existingBooking Bookings
+	err := db.Get().Where("user_id = ? AND camp_id = ?", user.UserID, camp.ID).
+		First(&existingBooking).Error
+
+	if err == nil {
+		// ✅ Booking exists
+		return true
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		// ❌ No booking found
+		return false
+	} else {
+		// 🔴 Some DB error
+		log.Println("DB error:", err)
+	}
+	return false
+
 }
 
 type User struct {

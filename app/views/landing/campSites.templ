@@ -5,6 +5,7 @@ import (
 	"explorer/plugins/campsite"
 	"fmt"
 	"strconv"
+	func(s T) string
 )
 
 func getFlashStyle(flashType string) string {
@@ -14,7 +15,7 @@ func getFlashStyle(flashType string) string {
 	return "bg-red-600"
 }
 
-templ CampSites(role string, camps []types.CampSite, buses []types.BuseType, seatMap map[int]int, flashType, flashMsg string) {
+templ CampSites(user types.AuthUser, camps []types.CampSite, buses []types.BuseType, seatMap map[int]int, flashType, flashMsg string) {
 	<div
 		x-data="{ show: true }"
 		x-init="setTimeout(() => show = false, 4000)"
@@ -36,7 +37,7 @@ templ CampSites(role string, camps []types.CampSite, buses []types.BuseType, sea
 		<div class="relative z-10 flex flex-col items-center justify-center px-6 pt-20">
 			<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Campsites</h1>
 			<!-- Add Button -->
-			if role == "admin" || role == "superuser" {
+			if user.Role == "admin" || user.Role == "superuser" {
 				<button
 					@click="open = true; mode = 'add'; $nextTick(() => document.getElementById('modal-inner').innerHTML = '')"
 					class="mb-6 px-4 py-2 text-sm font-medium bg-white text-green-900 rounded-md hover:bg-green-100 transition"
@@ -47,7 +48,7 @@ templ CampSites(role string, camps []types.CampSite, buses []types.BuseType, sea
 			<!-- Cards -->
 			<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl w-full">
 				for _, camp := range camps {
-					@campCard(camp, role, seatMap)
+					@campCard(camp, user, seatMap)
 				}
 			</div>
 		</div>
@@ -76,14 +77,21 @@ templ CampSites(role string, camps []types.CampSite, buses []types.BuseType, sea
 	</section>
 }
 
-templ campCard(camp types.CampSite, role string, seatMap map[int]int) {
+templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 	<div class="bg-white rounded-xl shadow-md overflow-hidden transition transform hover:scale-105">
 		<img src={ camp.ImageURL } alt="Campsite" class="w-full h-48 object-cover"/>
 		<div class="p-4">
 			<h2 class="text-xl font-bold text-green-900">{ camp.Name }</h2>
 			<p class="text-sm text-gray-700 mt-1">{ camp.Description }</p>
 			<p class="text-xs text-gray-500 mt-2">{ camp.Location }</p>
-			<p class="text-sm text-gray-600">Total Seats: { seatMap[camp.ID] }</p>
+			<p class="text-sm text-gray-600">Available Seats: { templ.EscapeString(func() string {
+				if seatMap[camp.ID] > 0 {
+					return strconv.Itoa(seatMap[camp.ID])
+				}
+			return "Full"    
+			}
+				
+			) seatMap[camp.ID] }</p>
 			<p class="text-xs text-gray-500 mt-2">
 				Available from: { templ.EscapeString(func() string {
 				if camp.AvailableFrom != nil {
@@ -100,8 +108,8 @@ templ campCard(camp types.CampSite, role string, seatMap map[int]int) {
 				return ""
 			}()) }
 			</p>
-			<p class="text-xs text-gray-500 mt-2">{ camp.Price } </p>
-			if role == "admin" || role == "superuser" {
+			<p class="text-xs text-gray-500 mt-2">{ camp.Price } TND</p>
+			if user.Role == "admin" || user.Role == "superuser" {
 				<!-- Action Buttons: Edit and Delete -->
 				<div class="flex justify-between items-center mt-4">
 					<!-- Edit Button -->
@@ -126,17 +134,19 @@ templ campCard(camp types.CampSite, role string, seatMap map[int]int) {
 					</form>
 				</div>
 			}
-			if role == "user" {
+			if user.Role == "user" {
 				<!-- Booking Button -->
 				<div class="mt-4 text-right">
-					<form method="GET" action={ fmt.Sprintf("/book-new/%d", camp.ID) }>
-						<button
-							type="submit"
-							class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
-						>
-							🎟️ Book Now
-						</button>
-					</form>
+					if !user.HasBooked(camp) {
+						<form method="GET" action={ fmt.Sprintf("/book-new/%d", camp.ID) }>
+							<button
+								type="submit"
+								class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
+							>
+								🎟️ Book Now
+							</button>
+						</form>
+					}
 				</div>
 			}
 		</div>

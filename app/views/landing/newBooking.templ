@@ -284,23 +284,15 @@ templ ConfirmationCachPayement() {
 						No
 					</button>
 					<!-- Confirm / Submit the actual form -->
-					// <button
-					// 	hx-post="/user/bookings"
-					// 	hx-include="[x-ref='bookingForm']"
-					// 	hx-target="body"
-					// 	hx-swap="innerHTML"
-					// 	class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
-					// >
-					// 	Yes, Confirm
-					// </button>
-					<form method="GET" action="/user/bookings/status">
-						<button
-							type="submit"
-							class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
-						>
-							Yes, Confirm
-						</button>
-					</form>
+					<button
+						hx-post="/user/bookings"
+						hx-include="[x-ref='bookingForm']"
+						hx-target="body"
+						hx-swap="innerHTML"
+						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+					>
+						Yes, Confirm
+					</button>
 				</div>
 			</div>
 		</div>
