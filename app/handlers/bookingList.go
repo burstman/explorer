@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"explorer/app/types"
 	"explorer/app/views/landing"
 
 	"github.com/anthdm/superkit/kit"
@@ -8,5 +9,6 @@ import (
 
 func HandelBooklist(kit *kit.Kit) error {
 
-	return RenderWithLayout(kit, landing.PhotoView())
+	var bookinglist []types.BookingDetails
+	return RenderWithLayout(kit, landing.BookingListAdmin(bookinglist))
 }

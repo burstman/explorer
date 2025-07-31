@@ -57,7 +57,6 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/photo+view", kit.Handler(handlers.HandlePhotoView))
 		app.Get("/AreaAttraction", kit.Handler(handlers.HandleCampSites))
 		app.Get("/book-new/{campID}", kit.Handler(handlers.HandleBookNew))
-		app.Get("/booking/list", kit.Handler(handlers.HandelBooklist))
 	})
 
 	// Authenticated routes
@@ -73,6 +72,7 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/admin/buses", kit.Handler(buses.HandleModal))
 		app.Get("/admin/services", kit.Handler(services.HandleServices))
 		app.Get("/user/bookings/status", kit.Handler(status.BookingHandler))
+		app.Get("/admin/booking/list", kit.Handler(handlers.HandelBooklist))
 
 		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
