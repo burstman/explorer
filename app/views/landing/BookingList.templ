@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-templ BookingListAdmin(bookings []types.BookingDetails) {
+templ BookingListAdmin(bookings []types.Bookings) {
 	<section class="px-6 py-10 max-w-7xl mx-auto">
 		<!-- Filters -->
 		<form hx-get="/admin/bookings/search" hx-target="#booking-results" class="mb-4 flex flex-wrap gap-3 items-center">
@@ -32,31 +32,39 @@ templ BookingListAdmin(bookings []types.BookingDetails) {
 						<th class="px-4 py-2">Customer</th>
 						<th class="px-4 py-2">Guests</th>
 						<th class="px-4 py-2">Status</th>
+						<th class="px-4 py-2">Payment Status</th>
+						<th class="px-4 py-2">Payment Method</th>
 						<th class="px-4 py-2">Actions</th>
 					</tr>
 				</thead>
 				<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
 					for _, booking := range bookings {
 						<tr>
-							<td class="px-4 py-2 font-medium">{ booking.BookingID }</td>
-							<td class="px-4 py-2">{ booking.CampName }</td>
+							<td class="px-4 py-2 font-medium">{ booking.ID }</td>
+							<td class="px-4 py-2">{ booking.Camp.Name }</td>
 							<td class="px-4 py-2">{ booking.User.FirstName } { booking.User.LastName }</td>
 							<td class="px-4 py-2">{ len(booking.Guests) }</td>
 							<td class="px-4 py-2">
-								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">Uploaded</span>
+								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
+							</td>
+							<td class="px-4 py-2">
+								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+							</td>
+							<td class="px-4 py-2">
+								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
 							</td>
 							<td class="px-4 py-2 space-x-2">
 								<!-- View -->
 								<button class="text-white hover:text-green-400">👁</button>
 								<!-- Edit -->
 								<button
-									hx-get={ "/admin/bookings/" + fmt.Sprint(booking.BookingID) + "/edit" }
+									hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
 									hx-target="#guest-edit-form"
 									class="text-white hover:text-yellow-400"
 								>✏️</button>
 								<!-- Delete -->
 								<button
-									hx-delete={ "/admin/bookings/" + fmt.Sprint(booking.BookingID) }
+									hx-delete={ "/admin/bookings/" + fmt.Sprint(booking.ID) }
 									hx-confirm="Are you sure?"
 									hx-target="closest tr"
 									hx-swap="outerHTML remove"

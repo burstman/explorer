@@ -239,7 +239,7 @@ templ PaymentMethod() {
 			<!-- ✅ Pay with Cash: Triggers form submit -->
 			<button
 				type="button"
-				@click="showPaymentModal = false; showConfirmModal = true"
+				@click="paymentMethod = 'cash';showPaymentModal = false; showConfirmModal = true"
 				class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded mb-4"
 			>
 				💵 Pay with Cash (on site)
@@ -285,10 +285,8 @@ templ ConfirmationCachPayement() {
 					</button>
 					<!-- Confirm / Submit the actual form -->
 					<button
-						hx-post="/user/bookings"
-						hx-include="[x-ref='bookingForm']"
-						hx-target="body"
-						hx-swap="innerHTML"
+						type="buuton"
+						@click="submitBooking('cash')"
 						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
 					>
 						Yes, Confirm
