@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"explorer/app/db"
+	"log"
 
 	"time"
 
@@ -50,15 +51,15 @@ func (user AuthUser) HasBooked(camp CampSite) bool {
 	err := db.Get().Where("user_id = ? AND camp_id = ?", user.UserID, camp.ID).
 		First(&existingBooking).Error
 
-	if err == nil {
-		// ✅ Booking exists
-		return true
-	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// ❌ No booking found
 		return false
-
+	} else if err != nil {
+		log.Println(err)
+		return false
+	} else {
+		return true
 	}
-	return false
 
 }
 

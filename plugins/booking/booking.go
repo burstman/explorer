@@ -4,6 +4,7 @@ import (
 	"explorer/app/db"
 	"explorer/app/types"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,7 +14,6 @@ import (
 
 func HandelCreateBooking(kit *kit.Kit) error {
 
-	
 	//  Parse form
 	if err := kit.Request.ParseForm(); err != nil {
 		return err
@@ -30,6 +30,9 @@ func HandelCreateBooking(kit *kit.Kit) error {
 		return err
 	}
 	paymentMethod := kit.Request.FormValue("payment_method")
+	status := kit.Request.FormValue("userStatus")
+
+	log.Println("Payment methode", paymentMethod)
 	specialRequest := kit.Request.FormValue("specialRequest")
 
 	// Booking object
@@ -38,7 +41,7 @@ func HandelCreateBooking(kit *kit.Kit) error {
 		CampID:         uint(campID),
 		SpecialRequest: specialRequest,
 		TotalPrice:     totalPrice,
-		Status:         "pending",
+		Status:         status,
 		PaymentStatus:  "unpaid",
 		PaymentMethod:  paymentMethod,
 	}

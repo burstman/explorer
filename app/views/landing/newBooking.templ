@@ -23,23 +23,25 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 	"termsOpen":        false,
 	"showPaymentModal": false,
 	"paymentMethod":    "",
+	"userStatus":       "",
 	"showConfirmModal": false,
 }
 	}}
 	<div
 		x-data={ templ.JSONString(data) }
 		x-init={ `total = () => {
-			const guestsFactor = 1 + Number(guests);
-			let servicesTotal = 0;
-			for (const id in services) {
-				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
-			}
-			return (campPrice * guestsFactor + servicesTotal).toFixed(2);
-			submitBooking = (method) => {
-  				paymentMethod = method;
-  				$nextTick(() => { $refs.bookingForm.submit(); });
-			};
-		}` }
+	const guestsFactor = 1 + Number(guests);
+	let servicesTotal = 0;
+	for (const id in services) {
+		servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+	}
+	return (campPrice * guestsFactor + servicesTotal).toFixed(2);
+};
+submitBooking = (method) => {
+	paymentMethod = method;
+	userStatus='booked'
+	$nextTick(() => { $refs.bookingForm.submit(); });
+};` }
 	>
 		<section class="relative min-h-screen">
 			<!-- Background and form layout -->
@@ -108,6 +110,8 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 
 templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Service) {
 	<form
+		action="/user/bookings"
+		method="post"
 		x-ref="bookingForm"
 		@submit.prevent="showPaymentModal = true"
 		class="space-y-6"
@@ -285,7 +289,7 @@ templ ConfirmationCachPayement() {
 					</button>
 					<!-- Confirm / Submit the actual form -->
 					<button
-						type="buuton"
+						type="button"
 						@click="submitBooking('cash')"
 						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
 					>
