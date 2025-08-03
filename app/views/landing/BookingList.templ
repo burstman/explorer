@@ -37,46 +37,53 @@ templ BookingListAdmin(bookings []types.Bookings) {
 						<th class="px-4 py-2">Actions</th>
 					</tr>
 				</thead>
-				<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
-					for _, booking := range bookings {
-						<tr>
-							<td class="px-4 py-2 font-medium">{ booking.ID }</td>
-							<td class="px-4 py-2">{ booking.User.FirstName } { booking.User.LastName }</td>
-							<td class="px-4 py-2">{ booking.Camp.Name }</td>
-							<td class="px-4 py-2">{ len(booking.Guests) }</td>
-							<td class="px-4 py-2">
-								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
-							</td>
-							<td class="px-4 py-2">
-								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
-							</td>
-							<td class="px-4 py-2">
-								<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
-							</td>
-							<td class="px-4 py-2 space-x-2">
-								<!-- View -->
-								<button class="text-white hover:text-green-400">👁</button>
-								<!-- Edit -->
-								<button
-									hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
-									hx-target="#guest-edit-form"
-									class="text-white hover:text-yellow-400"
-								>✏️</button>
-								<!-- Delete -->
-								<button
-									hx-delete={ "/admin/bookings/" + fmt.Sprint(booking.ID) }
-									hx-confirm="Are you sure?"
-									hx-target="closest tr"
-									hx-swap="outerHTML remove"
-									class="text-white hover:text-red-400"
-								>🗑️</button>
-							</td>
-						</tr>
-					}
-				</tbody>
+				@BookingTableRows(bookings)
 			</table>
 		</div>
 		<!-- Add/Edit Guest Form -->
 		<div id="guest-edit-form" class="mt-6"></div>
 	</section>
+}
+
+// In landing/booking_rows.templ
+templ BookingTableRows(bookings []types.Bookings) {
+	<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
+		for _, booking := range bookings {
+			<tr>
+				<td class="px-4 py-2 font-medium">{ booking.ID }</td>
+				<td class="px-4 py-2">{ booking.User.FirstName } { booking.User.LastName }</td>
+				<td class="px-4 py-2">{ booking.Camp.Name }</td>
+				<td class="px-4 py-2">{ len(booking.Guests) }</td>
+				<td class="px-4 py-2">
+					<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
+				</td>
+				<td class="px-4 py-2">
+					<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+				</td>
+				<td class="px-4 py-2">
+					<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
+				</td>
+				<td class="px-4 py-2 space-x-2">
+					<!-- View -->
+					<button class="text-white hover:text-green-400">👁</button>
+					<!-- Edit -->
+					<button
+						@click="modalOpen = true"
+						hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="text-white hover:text-yellow-400"
+					>✏️</button>
+					<!-- Delete -->
+					<button
+						hx-delete={ "/admin/bookings/list/" + fmt.Sprint(booking.ID) }
+						hx-confirm="Are you sure?"
+						hx-target="#booking-results"
+						hx-swap="outerHTML"
+						class="text-white hover:text-red-400"
+					>🗑️</button>
+				</td>
+			</tr>
+		}
+	</tbody>
 }

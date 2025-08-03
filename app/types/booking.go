@@ -2,6 +2,13 @@ package types
 
 import "gorm.io/gorm"
 
+const (
+	StatusPending   = "pending"
+	StatusBooked    = "booked"
+	StatusCancelled = "cancelled"
+	StatusCompleted = "completed"
+)
+
 type Bookings struct {
 	gorm.Model
 

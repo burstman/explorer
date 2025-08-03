@@ -73,6 +73,7 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/admin/services", kit.Handler(services.HandleServices))
 		app.Get("/user/bookings/status", kit.Handler(status.BookingHandler))
 		app.Get("/admin/booking/list", kit.Handler(handlers.HandelBooklist))
+		app.Get("/admin/bookings/{id}/edit", kit.Handler(handlers.EditBooking))
 
 		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))
@@ -83,6 +84,8 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))
 		app.Post("/admin/services/{id}/delete", kit.Handler(services.HandleServiceDelete))
+
+		app.Delete("/admin/bookings/list/{bookID}", kit.Handler(handlers.HandelDeleteBookingList))
 	})
 }
 

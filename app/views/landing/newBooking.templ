@@ -124,6 +124,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<input type="hidden" name="totalPrice" :value="total()"/>
 		<input type="hidden" name="guestsCount" :value="guests"/>
 		<input type="hidden" name="payment_method" :value="paymentMethod"/>
+		<input type="hidden" name="userStatus" :value="userStatus"/>
 		<!-- User Profile Info -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
