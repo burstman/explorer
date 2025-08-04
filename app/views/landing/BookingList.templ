@@ -65,7 +65,13 @@ templ BookingTableRows(bookings []types.Bookings) {
 				</td>
 				<td class="px-4 py-2 space-x-2">
 					<!-- View -->
-					<button class="text-white hover:text-green-400">👁</button>
+					<button
+						@click="modalOpen = true"
+						hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/showDetail" }
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="text-white hover:text-green-400"
+					>👁</button>
 					<!-- Edit -->
 					<button
 						@click="modalOpen = true"
@@ -86,4 +92,112 @@ templ BookingTableRows(bookings []types.Bookings) {
 			</tr>
 		}
 	</tbody>
+}
+
+templ BookingDetailModal(booking types.Bookings) {
+	<div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full space-y-4">
+		<h2 class="text-2xl font-bold text-gray-800 mb-4">Booking Details</h2>
+		<!-- General Info -->
+		<div class="space-y-2 text-sm text-gray-700">
+			<p><strong>Booking ID:</strong> { booking.ID }</p>
+			<p><strong>Customer:</strong> { booking.User.FirstName } { booking.User.LastName } ({ booking.User.Email })</p>
+			<p><strong>Camp:</strong> { booking.Camp.Name }</p>
+			<p><strong>Booking Date:</strong> { booking.CreatedAt.Format("2006-01-02 15:04") }</p>
+			<p><strong>Status:</strong> <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span></p>
+			<p>
+				<strong>Payment:</strong>
+				<span class="bg-green-600 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
+			</p>
+			<p>
+				<strong>Payment Status:</strong>
+				<span class="ml-2 bg-purple-600 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+			</p>
+			<p><strong>Total Price:</strong> { fmt.Sprintf("%.2f", booking.TotalPrice) } TND</p>
+			<p><strong>Special Request:</strong> { booking.SpecialRequest }</p>
+		</div>
+		<!-- Guests -->
+		<div class="mt-4">
+			<h3 class="text-lg font-semibold text-gray-800 mb-2">👤 Guests ({ len(booking.Guests) })</h3>
+			<ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+				for _, g := range booking.Guests {
+					if g.CIN!="" {
+						<li>{ g.FirstName } { g.LastName } - CIN: { g.CIN } </li>
+					} else {
+						<li>{ g.FirstName } { g.LastName }</li>
+					}
+				}
+			</ul>
+		</div>
+		<!-- Services -->
+		if len(booking.Services) > 0 {
+			<div class="mt-4">
+				<h3 class="text-lg font-semibold text-gray-800 mb-2">🛠️ Services</h3>
+				<ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+					for _, bs := range booking.Services {
+						<li>{ bs.Service.Name } × { bs.Quantity } → { fmt.Sprintf("%.2f", bs.Service.Price*float64(bs.Quantity)) } TND</li>
+					}
+				</ul>
+			</div>
+		}
+		<!-- Close Button -->
+		<div class="text-right pt-4">
+			<button
+				@click="modalOpen = false"
+				class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+			>Close</button>
+		</div>
+	</div>
+}
+
+templ EditBookingModal(booking types.Bookings, camps []types.CampSite) {
+	<form
+		hx-put={ "/admin/bookings/" + fmt.Sprint(booking.ID) }
+		hx-target="#modal-content"
+		hx-swap="innerHTML"
+		class="space-y-6"
+	>
+		<!-- Campsite Selection -->
+		<label class="block text-sm font-medium text-gray-700">Campsite</label>
+		<select name="camp_id" class="w-full border rounded-md px-3 py-2">
+			for _, camp := range camps {
+				<option value={ camp.ID } selected={ int(booking.CampID) == camp.ID }>
+					{ camp.Name } ({ camp.AvailableFrom.Format("2006-01-02") })
+				</option>
+			}
+		</select>
+		<!-- Guests -->
+		<h3 class="text-sm font-semibold">Guests</h3>
+		for i, guest := range booking.Guests {
+			<div class="grid grid-cols-4 gap-3 items-center">
+				<input type="hidden" name={ fmt.Sprintf("guests[%d][id]", i) } value={ fmt.Sprint(guest.ID) }/>
+				<input type="text" name={ fmt.Sprintf("guests[%d][first_name]", i) } value={ guest.FirstName } class="border rounded px-2 py-1"/>
+				<input type="text" name={ fmt.Sprintf("guests[%d][last_name]", i) } value={ guest.LastName } class="border rounded px-2 py-1"/>
+				<input type="text" name={ fmt.Sprintf("guests[%d][cin]", i) } value={ guest.CIN } class="border rounded px-2 py-1"/>
+			</div>
+		}
+		<!-- Admin can add new blank guests in frontend via JS (or expose add/remove buttons) -->
+		<!-- Services -->
+		<h3 class="text-sm font-semibold">Services</h3>
+		for i, bs := range booking.Services {
+			<div class="grid grid-cols-5 gap-3 items-center">
+				<input type="hidden" name={ fmt.Sprintf("services[%d][id]", i) } value={ fmt.Sprint(bs.ID) }/>
+				<input type="hidden" name={ fmt.Sprintf("services[%d][service_id]", i) } value={ fmt.Sprint(bs.ServiceID) }/>
+				<span class="col-span-2 text-gray-800">{ bs.Service.Name }</span>
+				<input type="number" name={ fmt.Sprintf("services[%d][quantity]", i) } value={ fmt.Sprint(bs.Quantity) } class="border rounded px-2 py-1 w-20"/>
+				<span class="text-sm text-gray-500">{ fmt.Sprintf("%.2f", bs.Service.Price) } TND</span>
+			</div>
+		}
+		<!-- Special Requests -->
+		<label class="block text-sm font-medium text-gray-700">Special Request</label>
+		<textarea name="special_request" class="w-full border px-3 py-2 rounded" rows="2">{ booking.SpecialRequest }</textarea>
+		<!-- Total (from backend) -->
+		<div class="border-t pt-2 mt-2 text-right">
+			<span class="text-lg font-semibold">Total: </span>
+			<span class="text-green-700 font-bold">{ fmt.Sprintf("%.2f TND", booking.TotalPrice) }</span>
+		</div>
+		<!-- Save -->
+		<div class="text-right">
+			<button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">💾 Save</button>
+		</div>
+	</form>
 }

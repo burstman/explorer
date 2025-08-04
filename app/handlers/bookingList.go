@@ -5,7 +5,6 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/anthdm/superkit/kit"
@@ -68,7 +67,55 @@ func HandelDeleteBookingList(kit *kit.Kit) error {
 
 func EditBooking(kit *kit.Kit) error {
 	strID := chi.URLParam(kit.Request, "id")
-	log.Println("book edit Id:", strID)
+	bookingID, err := strconv.Atoi(strID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
-	return kit.Text(http.StatusAccepted, strID)
+	var booking types.Bookings
+	err = db.Get().
+		Preload("Guests").
+		Preload("Services.Service").
+		Preload("Camp").
+		Preload("User").
+		First(&booking, "id = ?", bookingID).Error
+	if err != nil {
+		return err
+	}
+	var camps []types.CampSite
+	err = db.Get().
+		Order("created_at asc").
+		Find(&camps).Error
+	if err != nil {
+		return err
+	}
+	return kit.Render(landing.EditBookingModal(booking, camps))
+
+}
+
+func BookingShowDetail(kit *kit.Kit) error {
+	strID := chi.URLParam(kit.Request, "id")
+
+	bookingID, err := strconv.Atoi(strID)
+	if err != nil {
+		return err
+	}
+
+	var booking types.Bookings
+	err = db.Get().
+		Where("id = ?", bookingID).
+		Preload("Guests").
+		Preload("Services.Service").
+		Preload("User").
+		Preload("Camp").
+		First(&booking).Error
+	if err != nil {
+		log.Println("failed to fetch booking:", err)
+		return err
+	}
+
+	//log.Println("booking detail:", booking)
+
+	return kit.Render(landing.BookingDetailModal(booking))
 }
