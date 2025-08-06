@@ -95,9 +95,10 @@ func HandleCampSites(kit *kit.Kit) error {
 	err = db.Get().Raw(`
 	SELECT 
 		b.camp_id,
-		COUNT(b.id) + COUNT(g.id) AS booked_seats
+		COUNT(DISTINCT b.id) + COUNT(g.id) AS booked_seats
 	FROM bookings b
-	LEFT JOIN guests g ON g.booking_id = b.id
+	LEFT JOIN guests g ON g.booking_id = b.id AND g.deleted_at IS NULL
+	WHERE b.deleted_at IS NULL
 	GROUP BY b.camp_id
 `).Scan(&bookings).Error
 

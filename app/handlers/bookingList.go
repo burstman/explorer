@@ -5,31 +5,30 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 func HandelBooklist(kit *kit.Kit) error {
-	var bookings []types.Bookings
 
-	// Load bookings with related data, exclude admins
+	var users []types.User
+
 	err := db.Get().
-		Joins("JOIN users ON users.id = bookings.user_id").
-		Where("users.role != ?", "admin").
-		Preload("Guests").
-		Preload("Services.Service").
-		Preload("User").
-		Preload("Camp").
-		Order("bookings.created_at DESC").
-		Find(&bookings).Error
+		Where("role != ?", "admin").
+		Preload("Bookings.Guests").
+		Preload("Bookings.Services.Service").
+		Preload("Bookings.Camp").
+		Find(&users).Error
 	if err != nil {
-		log.Println("failed to fetch bookings:", err)
+		log.Println("failed to fetch users and bookings:", err)
 		return err
 	}
 
-	return RenderWithLayout(kit, landing.BookingListAdmin(bookings))
+	return RenderWithLayout(kit, landing.BookingListAdmin(users))
 }
 
 func HandelDeleteBookingList(kit *kit.Kit) error {
@@ -47,22 +46,22 @@ func HandelDeleteBookingList(kit *kit.Kit) error {
 		return err
 	}
 
-	var bookings []types.Bookings
+	var users []types.User
 	err = db.Get().
-		Joins("JOIN users ON users.id = bookings.user_id").
-		Where("users.role != ?", "admin").
-		Preload("Guests").
-		Preload("Services.Service").
-		Preload("User").
-		Preload("Camp").
-		Order("bookings.created_at DESC").
-		Find(&bookings).Error
+		Where("role != ?", "admin").
+		Preload("Bookings", func(db *gorm.DB) *gorm.DB {
+			return db.Order("bookings.created_at DESC").
+				Preload("Guests").
+				Preload("Services.Service").
+				Preload("Camp")
+		}).
+		Find(&users).Error
 	if err != nil {
-		log.Println("failed to fetch bookings:", err)
+		log.Println("failed to fetch users with bookings:", err)
 		return err
 	}
 
-	return kit.Render(landing.BookingTableRows(bookings))
+	return kit.Render(landing.BookingTableRows(users))
 }
 
 func EditBooking(kit *kit.Kit) error {
@@ -118,4 +117,9 @@ func BookingShowDetail(kit *kit.Kit) error {
 	//log.Println("booking detail:", booking)
 
 	return kit.Render(landing.BookingDetailModal(booking))
+}
+
+func BookingAdminCreate(kit *kit.Kit) error {
+	strUserID := chi.URLParam(kit.Request, "user_id")
+	return kit.Text(http.StatusOK, strUserID)
 }

@@ -1,375 +1,136 @@
 package components
 
 templ Navigation(Role string, isLoggedIn bool) {
-	<div x-data="{ open: false }">
-		<!-- Mobile Toggle -->
-		<div class="lg:hidden p-2">
-			<button @click="open = !open" class="text-white focus:outline-none">
-				<!-- Icon -->
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="currentColor"
-					class="w-6 h-6"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5"></path>
-				</svg>
-			</button>
-		</div>
-		<nav class="sticky top-0 z-50 border-b py-3" style="overflow: visible;">
-			<div class="container mx-auto flex items-center justify-between  relative">
-				<!-- Left: Explorer -->
-				<div class="text-lg text-foreground">
-					<a href="/" class="font-semibold uppercase">Explorer <span class="text-sm">v0.1</span></a>
-				</div>
-				<!-- Center: Navigation Links -->
-				<div
-					:class="{ 'hidden': !open, 'flex': open }"
-					class="w-full lg:flex lg:gap-6 lg:items-center lg:justify-center flex-grow mt-4 lg:mt-0"
-				>
-					<!-- Home Button -->
-					<button
-						hx-get="/"
-						hx-target="#main-content"
-						hx-swap="innerHTML"
-						class="bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 transition-colors duration-200"
-					>Home</button>
-					<!-- Book Dropdown (Alpine.js Enhanced) -->
-					<div
-						x-data="{
-							open: false,
-							toggle() {
-							if (this.open) return this.close();
-							this.$refs.button.focus();
-							this.open = true;
-							},
-							close(focusAfter) {
-							if (!this.open) return;
-							this.open = false;
-							focusAfter && focusAfter.focus();
-							}
-						}"
-						x-on:keydown.escape.prevent.stop="close($refs.button)"
-						x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-						x-id="['dropdown-button']"
-						class="relative "
-						style="position: relative; z-index: 30;"
-					>
-						<!-- Dropdown Trigger -->
-						<button
-							x-ref="button"
-							x-on:click="toggle()"
-							:aria-expanded="open"
-							:aria-controls="$id('dropdown-button')"
-							type="button"
-							class="w-full lg:w-auto text-center bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 hover:text-white transition-colors duration-200"
-						>
-							<span>Book</span>
-						</button>
-						<!-- Dropdown Panel -->
-						<div class="block">
-							<div
-								x-ref="panel"
-								x-show="open"
-								x-transition=""
-								x-on:click.outside="close($refs.button)"
-								:id="$id('dropdown-button')"
-								class="absolute left-0 right-0 mx-auto w-48 rounded-lg shadow-xl mt-3 p-2 border border-green-800 bg-white z-50 space-y-1"
-							>
-								if isLoggedIn {
-									if Role == "admin" {
-										<a
-											href="/admin/booking/list"
-											class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-										>
-											Book
-											List
-										</a>
-									}
-									if Role=="user" {
-										<a
-											href="/user/bookings/status"
-											class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-										>
-											Booking-Status
-										</a>
-									}
+	<div class="bg-green-900 border-b border-green-800 sticky top-0 z-50" x-data="{ open: false }">
+		<!-- Top nav container -->
+		<div class="container mx-auto flex items-center justify-between px-4 py-3 lg:py-4">
+			<!-- Brand -->
+			<a href="/" class="text-white text-xl font-bold tracking-wide">
+				Explorer <span class="text-sm font-light">v0.1</span>
+			</a>
+			<!-- Mobile toggle -->
+			<div class="lg:hidden">
+				<button @click="open = !open" class="text-white focus:outline-none">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5M3.75 12h16.5m-16.5 6h16.5"></path>
+					</svg>
+				</button>
+			</div>
+			<!-- Desktop navigation -->
+			<div class="hidden lg:flex items-center gap-6">
+				<!-- Page links -->
+				<div class="flex gap-4 items-center">
+					<button hx-get="/" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Home</button>
+					<!-- Book -->
+					<div x-data="{ open: false }" class="relative">
+						<button @click="open = !open" class="text-white hover:text-gray-300">Book</button>
+						<div x-show="open" @click.outside="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white text-sm text-gray-800 shadow-lg rounded-md z-50 space-y-1 p-2">
+							if isLoggedIn {
+								if Role == "admin" {
+									<a href="/admin/booking/list" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">Book List</a>
 								}
-							</div>
+								if Role == "user" {
+									<a href="/user/bookings/status" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">Booking Status</a>
+								}
+							}
 						</div>
 					</div>
-					<button
-						hx-get="/AreaAttraction"
-						hx-target="#main-content"
-						hx-swap="innerHTML"
-						class="bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 transition-colors duration-200"
-					>Camp-Sites</button>
-					<button
-						hx-get="/photo+view"
-						hx-target="#main-content"
-						hx-swap="innerHTML"
-						class="bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 transition-colors duration-200"
-					>Photo+View</button>
-					<!-- Help Dropdown with About -->
-					<div
-						x-data="{
-							open: false,
-							toggle() {
-							if (this.open) return this.close();
-							this.$refs.button.focus();
-							this.open = true;
-							},
-							close(focusAfter) {
-							if (!this.open) return;
-							this.open = false;
-							focusAfter && focusAfter.focus();
-							}
-						}"
-						x-on:keydown.escape.prevent.stop="close($refs.button)"
-						x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-						x-id="['dropdown-button']"
-						class="relative "
-						style="position: relative; z-index: 30;"
-					>
-						<!-- Dropdown Trigger -->
-						<button
-							x-ref="button"
-							x-on:click="toggle()"
-							:aria-expanded="open"
-							:aria-controls="$id('dropdown-button')"
-							type="button"
-							class="w-full lg:w-auto text-center bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 hover:text-white transition-colors duration-200"
-						>
-							<span>Help</span>
-						</button>
-						<!-- Dropdown Panel -->
-						<div class="block">
-							<div
-								x-ref="panel"
-								x-show="open"
-								x-transition=""
-								x-on:click.outside="close($refs.button)"
-								:id="$id('dropdown-button')"
-								class="absolute left-0 right-0 mx-auto w-48 rounded-lg shadow-xl mt-3 p-2 border border-green-800 bg-white z-50 space-y-1"
-							>
-								<a
-									href="/about"
-									hx-get="/about"
-									hx-target="#main-content"
-									hx-push-url="true"
-									hx-swap="innerHTML"
-									class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-								>
-									About
-								</a>
-							</div>
+					<button hx-get="/AreaAttraction" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Camp-Sites</button>
+					<button hx-get="/photo+view" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Photo+View</button>
+					<!-- Help -->
+					<div x-data="{ open: false }" class="relative">
+						<button @click="open = !open" class="text-white hover:text-gray-300">Help</button>
+						<div x-show="open" @click.outside="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white text-sm text-gray-800 shadow-lg rounded-md z-50 space-y-1 p-2">
+							<a hx-get="/about" hx-target="#main-content" hx-swap="innerHTML" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">About</a>
 						</div>
 					</div>
-				</div><!-- End Navbar without login -->
-				<!-- Right: Login + Theme -->
-				<!-- Replace the login button with conditional logic -->
-				<div class="hidden lg:flex items-center gap-2">
-					if isLoggedIn && Role == "admin" {
-						<div
-							x-data="{
-							open: false,
-							toggle() {
-							if (this.open) return this.close();
-							this.$refs.button.focus();
-							this.open = true;
-							},
-							close(focusAfter) {
-							if (!this.open) return;
-							this.open = false;
-							focusAfter && focusAfter.focus();
-							}
-						}"
-							x-on:keydown.escape.prevent.stop="close($refs.button)"
-							x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-							x-id="['dropdown-button']"
-							class="relative "
-							style="position: relative; z-index: 30;"
-						>
-							<!-- Dropdown Trigger -->
-							<button
-								x-ref="button"
-								x-on:click="toggle()"
-								:aria-expanded="open"
-								:aria-controls="$id('dropdown-button')"
-								type="button"
-								class="w-full lg:w-auto text-center bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 hover:text-white transition-colors duration-200"
-							>
-								<span>Admin-User</span>
-							</button>
-							<!-- Dropdown Panel -->
-							<div class="block">
-								<div
-									x-ref="panel"
-									x-show="open"
-									x-transition=""
-									x-on:click.outside="close($refs.button)"
-									:id="$id('dropdown-button')"
-									class="absolute left-0 right-0 w-48 rounded-lg shadow-xl mt-3 p-2 border border-green-800 bg-white z-50 space-y-1"
-								>
-									<a
-										href="/profile"
-										class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									>
-										profile
-									</a>
-									<a
-										@click="modalOpen = true"
-										hx-get="/admin/buses"
-										hx-target="#modal-content"
-										hx-swap="innerHTML"
-										class="px-2 py-1 w-full flex items-center rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
-									>
-										🚌 Configure Buses
-									</a>
-									<a
-										@click="modalOpen = true"
-										hx-get="/admin/services"
-										hx-target="#modal-content"
-										hx-swap="innerHTML"
-										class="px-2 py-1 w-full flex items-center rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
-									>
-										Configure Services
-									</a>
-									<a
-										href="/logout"
-										hx-delete="/logout"
-										class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									>
-										logout
-									</a>
-								</div>
-							</div>
-						</div>
-					} else if isLoggedIn {
-						<div
-							x-data="{
-							open: false,
-							toggle() {
-							if (this.open) return this.close();
-							this.$refs.button.focus();
-							this.open = true;
-							},
-							close(focusAfter) {
-							if (!this.open) return;
-							this.open = false;
-							focusAfter && focusAfter.focus();
-							}
-						}"
-							x-on:keydown.escape.prevent.stop="close($refs.button)"
-							x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
-							x-id="['dropdown-button']"
-							class="relative "
-							style="position: relative; z-index: 30;"
-						>
-							<!-- Dropdown Trigger -->
-							<button
-								x-ref="button"
-								x-on:click="toggle()"
-								:aria-expanded="open"
-								:aria-controls="$id('dropdown-button')"
-								type="button"
-								class="w-full lg:w-auto text-center bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 hover:text-white transition-colors duration-200"
-							>
-								<span>User</span>
-							</button>
-							<!-- Dropdown Panel -->
-							<div class="block">
-								<div
-									x-ref="panel"
-									x-show="open"
-									x-transition=""
-									x-on:click.outside="close($refs.button)"
-									:id="$id('dropdown-button')"
-									class="absolute left-0 right-0 mx-auto w-48 rounded-lg shadow-xl mt-3 p-2 border border-green-800 bg-white z-50 space-y-1"
-								>
-									<a
-										href="/profile"
-										class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									>
-										profile
-									</a>
-									<a
-										href="/logout"
-										hx-delete="/logout"
-										class="px-2 lg:py-1.5 py-2 w-full flex items-center rounded-md transition-colors text-left text-gray-800 hover:bg-green-800 hover:text-white"
-									>
-										logout
-									</a>
-								</div>
-							</div>
-						</div>
-					} else {
-						<button
-							hx-get="/login"
-							hx-target="#main-content"
-							hx-push-url="true"
-							hx-swap="innerHTML"
-							class="w-full lg:w-auto text-center bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800 transition-colors duration-200"
-						>Login</button>
+				</div>
+				<!-- Desktop login -->
+				<div>
+					@login(isLoggedIn, Role)
+				</div>
+			</div>
+		</div>
+		<!-- Mobile nav dropdown -->
+		<div x-show="open" class="lg:hidden px-4 pb-4 space-y-2">
+			<button hx-get="/" hx-target="#main-content" hx-swap="innerHTML" class="block w-full text-left text-white py-2 hover:text-gray-300">Home</button>
+			<div x-data="{ open: false }">
+				<button @click="open = !open" class="block w-full text-left text-white py-2 hover:text-gray-300">Book</button>
+				<div x-show="open" class="mt-1 ml-2 pl-2 border-l border-green-700 space-y-1">
+					if isLoggedIn {
+						if Role == "admin" {
+							<a href="/admin/booking/list" class="block text-white py-1 hover:text-gray-300">Book List</a>
+						}
+						if Role == "user" {
+							<a href="/user/bookings/status" class="block text-white py-1 hover:text-gray-300">Booking Status</a>
+						}
 					}
 				</div>
 			</div>
-		</nav>
+			<button hx-get="/AreaAttraction" hx-target="#main-content" hx-swap="innerHTML" class="block w-full text-left text-white py-2 hover:text-gray-300">Camp-Sites</button>
+			<button hx-get="/photo+view" hx-target="#main-content" hx-swap="innerHTML" class="block w-full text-left text-white py-2 hover:text-gray-300">Photo+View</button>
+			<div x-data="{ open: false }">
+				<button @click="open = !open" class="block w-full text-left text-white py-2 hover:text-gray-300">Help</button>
+				<div x-show="open" class="mt-1 ml-2 pl-2 border-l border-green-700 space-y-1">
+					<a hx-get="/about" hx-target="#main-content" hx-swap="innerHTML" class="block text-white py-1 hover:text-gray-300">About</a>
+				</div>
+			</div>
+			<!-- Centered login on mobile -->
+			<div class="flex justify-center mt-4">
+				@login(isLoggedIn, Role)
+			</div>
+		</div>
 	</div>
 }
 
-// <div x-show="theme === 'dark'" class="cursor-pointer" @click="theme = 'light'">
-// 	<svg
-// 		xmlns="http://www.w3.org/2000/svg"
-// 		width="24"
-// 		height="24"
-// 		viewBox="0 0 24 24"
-// 		fill="none"
-// 		stroke="currentColor"
-// 		stroke-width="2"
-// 		stroke-linecap="round"
-// 		stroke-linejoin="round"
-// 		class="lucide lucide-sun"
-// 	>
-// 		<circle cx="12" cy="12" r="4"></circle>
-// 		<path d="M12 2v2"></path>
-// 		<path d="M12 20v2"></path>
-// 		<path d="m4.93 4.93 1.41 1.41"></path>
-// 		<path d="m17.66 17.66 1.41 1.41"></path>
-// 		<path d="M2 12h2"></path>
-// 		<path d="M20 12h2"></path>
-// 		<path d="m6.34 17.66-1.41 1.41"></path>
-// 		<path d="m19.07 4.93-1.41 1.41"></path>
-// 	</svg>
-// </div>
-// <div
-// 	x-show="theme === 'light'"
-// 	class="cursor-pointer"
-// 	@click="theme = 'dark'"
-// 	style="display: none;"
-// >
-// 	<svg
-// 		xmlns="http://www.w3.org/2000/svg"
-// 		width="24"
-// 		height="24"
-// 		viewBox="0 0 24 24"
-// 		fill="none"
-// 		stroke="currentColor"
-// 		stroke-width="2"
-// 		stroke-linecap="round"
-// 		stroke-linejoin="round"
-// 		class="lucide lucide-sun-moon"
-// 	>
-// 		<path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"></path>
-// 		<path d="M12 2v2"></path>
-// 		<path d="M12 20v2"></path>
-// 		<path d="m4.9 4.9 1.4 1.4"></path>
-// 		<path d="m17.7 17.7 1.4 1.4"></path>
-// 		<path d="M2 12h2"></path>
-// 		<path d="M20 12h2"></path>
-// 		<path d="m6.3 17.7-1.4 1.4"></path>
-// 		<path d="m19.1 4.9-1.4 1.4"></path>
-// 	</svg>
-// </div>
+templ login(isLoggedIn bool, Role string) {
+	if isLoggedIn {
+		<div x-data="{ open: false }" class="relative">
+			<button
+				@click="open = !open"
+				class="bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800"
+			>
+				if Role == "admin" {
+					Admin-User
+				} else {
+					User
+				}
+			</button>
+			<div
+				x-show="open"
+				@click.outside="open = false"
+				x-transition
+				class="absolute right-0 w-48 rounded-lg shadow-xl mt-3 p-2 border border-green-800 bg-white z-50 space-y-1"
+			>
+				<a href="/profile" class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white">Profile</a>
+				if Role == "admin" {
+					<a
+						hx-get="/admin/buses"
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
+					>🚌 Configure Buses</a>
+					<a
+						hx-get="/admin/services"
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
+					>Configure Services</a>
+				}
+				<a
+					href="/logout"
+					hx-delete="/logout"
+					class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
+				>Logout</a>
+			</div>
+		</div>
+	} else {
+		<button
+			hx-get="/login"
+			hx-target="#main-content"
+			hx-push-url="true"
+			hx-swap="innerHTML"
+			class="bg-green-900 text-white px-3 py-2 rounded-md hover:bg-green-800"
+		>Login</button>
+	}
+}

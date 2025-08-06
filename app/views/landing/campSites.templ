@@ -136,7 +136,7 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 			if user.Role == "user" {
 				<!-- Booking Button -->
 				<div class="mt-4 text-right">
-					if !user.HasBooked(camp) {
+					if !user.HasBooked(camp) &&  seatMap[camp.ID] > 0 {
 						<form method="GET" action={ fmt.Sprintf("/book-new/%d", camp.ID) }>
 							<button
 								type="submit"

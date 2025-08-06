@@ -77,4 +77,6 @@ type User struct {
 	Role            string `gorm:"not null;default:user"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+
+	Bookings []Bookings `gorm:"foreignKey:UserID"`
 }
