@@ -5,7 +5,6 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/anthdm/superkit/kit"
@@ -119,7 +118,51 @@ func BookingShowDetail(kit *kit.Kit) error {
 	return kit.Render(landing.BookingDetailModal(booking))
 }
 
-func BookingAdminCreate(kit *kit.Kit) error {
+func BookingAdminAdd(kit *kit.Kit) error {
 	strUserID := chi.URLParam(kit.Request, "user_id")
-	return kit.Text(http.StatusOK, strUserID)
+
+	userID, err := strconv.Atoi(strUserID)
+	if err != nil {
+		return err
+	}
+
+	var user types.User
+
+	err = db.Get().
+		Where("id = ?", userID).
+		First(&user).Error
+
+	if err != nil {
+		return err
+	}
+
+	services, err := GetAllAvailableServices()
+	if err != nil {
+		return err
+	}
+
+	camps, err := GetAllAvailableCamps()
+	if err != nil {
+		return err
+	}
+
+	return kit.Render(landing.BookingAdminCreateModal(user, services, camps))
+}
+
+func GetAllAvailableServices() ([]types.Service, error) {
+	var services []types.Service
+	err := db.Get().Find(&services).Error
+	if err != nil {
+		return nil, err
+	}
+	return services, nil
+}
+
+func GetAllAvailableCamps() ([]types.CampSite, error) {
+	var camps []types.CampSite
+	err := db.Get().Find(&camps).Error
+	if err != nil {
+		return nil, err
+	}
+	return camps, nil
 }

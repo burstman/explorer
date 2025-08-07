@@ -3,6 +3,7 @@ package landing
 import (
 	"explorer/app/types"
 	"fmt"
+	"strconv"
 )
 
 templ BookingListAdmin(users []types.User) {
@@ -51,11 +52,10 @@ templ BookingTableRows(users []types.User) {
 		for _, user := range users {
 			if len(user.Bookings) == 0 {
 				<tr>
-					<td class="px-4 py-2 font-medium text-white" colspan="7">
-						{ user.FirstName } { user.LastName } – No bookings
-					</td>
+					<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
+					<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
+					<td class="px-4 py-2 italic text-gray-400" colspan="5">No bookings</td>
 					<td class="px-4 py-2 text-right">
-						<!-- ➕ Add Booking -->
 						<button
 							@click="modalOpen = true"
 							hx-get={ "/admin/bookings/" + fmt.Sprint(user.ID) + "/new" }
@@ -82,7 +82,6 @@ templ BookingTableRows(users []types.User) {
 							<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
 						</td>
 						<td class="px-4 py-2 space-x-2 text-white">
-							<!-- View -->
 							<button
 								@click="modalOpen = true"
 								hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/showDetail" }
@@ -90,7 +89,6 @@ templ BookingTableRows(users []types.User) {
 								hx-swap="innerHTML"
 								class="hover:text-green-400"
 							>👁</button>
-							<!-- Edit -->
 							<button
 								@click="modalOpen = true"
 								hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
@@ -98,7 +96,6 @@ templ BookingTableRows(users []types.User) {
 								hx-swap="innerHTML"
 								class="hover:text-yellow-400"
 							>✏️</button>
-							<!-- Delete -->
 							<button
 								hx-delete={ "/admin/bookings/list/" + fmt.Sprint(booking.ID) }
 								hx-confirm="Are you sure?"
@@ -220,4 +217,83 @@ templ EditBookingModal(booking types.Bookings, camps []types.CampSite) {
 			<button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">💾 Save</button>
 		</div>
 	</form>
+}
+
+templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service, camps []types.CampSite) {
+	{{ servicesMap := map[string]float64{} }}
+	{{ serviceQuantity := map[string]int{} }}
+	{{for _, s := range AvailableServices {
+	servicesMap[strconv.Itoa(int(s.ID))] = s.Price
+	serviceQuantity[strconv.Itoa(int(s.ID))] = 0
+}
+	}}
+	{{data := map[string]interface{}{
+	"guests":       0,
+	"services":     serviceQuantity,
+	"servicesData": servicesMap,
+}
+	}}
+	<div
+		x-data={ templ.JSONString(data) }
+		x-init={ `total = () => {
+			let servicesTotal = 0;
+			for (const id in services) {
+				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+			}
+			return servicesTotal.toFixed(2);
+		};` }
+		class="p-6 bg-white rounded-md shadow-md"
+	>
+		<form method="post" action="/admin/bookings/create" class="space-y-6">
+			<h2 class="text-xl font-bold mb-4">Admin Booking</h2>
+			<!-- Camp Dropdown -->
+			<label for="camp_id" class="block mb-1">Select Camp</label>
+			@CampDropdown(camps)
+			<!-- Hidden inputs -->
+			<input type="hidden" name="userID" value={ strconv.Itoa(int(user.ID)) }/>
+			<input type="hidden" name="totalPrice" :value="total()"/>
+			<input type="hidden" name="guestsCount" :value="guests"/>
+			<!-- User Info -->
+			<div class="grid grid-cols-2 gap-4">
+				<div>
+					<label class="text-sm text-gray-600">First Name</label>
+					<input type="text" value={ user.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+				</div>
+				<div>
+					<label class="text-sm text-gray-600">Last Name</label>
+					<input type="text" value={ user.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+				</div>
+			</div>
+			<!-- Guests -->
+			<div>
+				<label class="text-sm font-medium text-gray-700">Number of Guests</label>
+				<select x-model="guests" name="guests" class="mt-1 block w-full px-3 py-2 border rounded-md">
+					<option value="">Select</option>
+					for i := 0; i <= 10; i++ {
+						<option value={ i }>{ i }</option>
+					}
+					<option value="10+">10+</option>
+				</select>
+			</div>
+			<!-- Guests Info (reuse) -->
+			@GuestFormFields()
+			<!-- Services (reuse) -->
+			@AdditionalServices(AvailableServices)
+			<!-- Submit -->
+			<div>
+				<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
+					➕ Add Booking
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
+templ CampDropdown(camps []types.CampSite) {
+	<select name="camp_id" class="border p-2 rounded w-full">
+		<option disabled selected>Select a campsite</option>
+		for _, camp := range camps {
+			<option value={ camp.ID }>{ camp.Name } - { camp.Location }</option>
+		}
+	</select>
 }
