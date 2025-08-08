@@ -220,6 +220,11 @@ templ EditBookingModal(booking types.Bookings, camps []types.CampSite) {
 }
 
 templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service, camps []types.CampSite) {
+	{{ campPrices := map[string]float64{} }}
+	{{for _, camp := range camps {
+	campPrices[strconv.Itoa(camp.ID)] = camp.Price
+}
+	}}
 	{{ servicesMap := map[string]float64{} }}
 	{{ serviceQuantity := map[string]int{} }}
 	{{for _, s := range AvailableServices {
@@ -231,6 +236,8 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 	"guests":       0,
 	"services":     serviceQuantity,
 	"servicesData": servicesMap,
+	"selectedCamp": "",
+	"campPrices":   campPrices,
 }
 	}}
 	<div
@@ -240,58 +247,70 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 			for (const id in services) {
 				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
 			}
-			return servicesTotal.toFixed(2);
+			const campPrice = campPrices[selectedCamp] || 0;
+			const guestsCount = parseInt(guests) || 0;
+			const totalCamp = (1 + guestsCount) * campPrice;
+
+			return (totalCamp + servicesTotal).toFixed(2);
 		};` }
 		class="p-6 bg-white rounded-md shadow-md"
 	>
-		<form method="post" action="/admin/bookings/create" class="space-y-6">
+		<form method="post" action={ (fmt.Sprintf("/admin/bookings/%d/create", user.ID)) } class="space-y-6">
 			<h2 class="text-xl font-bold mb-4">Admin Booking</h2>
-			<!-- Camp Dropdown -->
-			<label for="camp_id" class="block mb-1">Select Camp</label>
-			@CampDropdown(camps)
-			<!-- Hidden inputs -->
-			<input type="hidden" name="userID" value={ strconv.Itoa(int(user.ID)) }/>
-			<input type="hidden" name="totalPrice" :value="total()"/>
-			<input type="hidden" name="guestsCount" :value="guests"/>
-			<!-- User Info -->
-			<div class="grid grid-cols-2 gap-4">
-				<div>
-					<label class="text-sm text-gray-600">First Name</label>
-					<input type="text" value={ user.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+			<div class="overflow-y-auto max-h-[70vh] pr-2 space-y-6">
+				<!-- Camp Dropdown -->
+				<label for="camp_id" class="block mb-1">Select Camp</label>
+				@CampDropdown(camps)
+				<!-- Hidden inputs -->
+				//<input type="hidden" name="userID" value={ strconv.Itoa(int(user.ID)) }/>
+				<input type="hidden" name="totalPrice" :value="total()"/>
+				<input type="hidden" name="guestsCount" :value="guests"/>
+				<!-- User Info -->
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="text-sm text-gray-600">First Name</label>
+						<input type="text" value={ user.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+					<div>
+						<label class="text-sm text-gray-600">Last Name</label>
+						<input type="text" value={ user.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
 				</div>
+				<!-- Guests Info (reuse) -->
+				@GuestFormFields()
+				<!-- Services (reuse) -->
+				@AdditionalServices(AvailableServices)
+				<!-- Special Requests -->
 				<div>
-					<label class="text-sm text-gray-600">Last Name</label>
-					<input type="text" value={ user.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+					<textarea name="specialRequest" id="specialRequest" rows="3" placeholder="User special requests" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
 				</div>
-			</div>
-			<!-- Guests -->
-			<div>
-				<label class="text-sm font-medium text-gray-700">Number of Guests</label>
-				<select x-model="guests" name="guests" class="mt-1 block w-full px-3 py-2 border rounded-md">
-					<option value="">Select</option>
-					for i := 0; i <= 10; i++ {
-						<option value={ i }>{ i }</option>
-					}
-					<option value="10+">10+</option>
-				</select>
-			</div>
-			<!-- Guests Info (reuse) -->
-			@GuestFormFields()
-			<!-- Services (reuse) -->
-			@AdditionalServices(AvailableServices)
-			<!-- Submit -->
-			<div>
-				<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
-					➕ Add Booking
-				</button>
+				<!-- Total Price Display -->
+				<div class="text-right mt-4">
+					<label class="block text-sm text-gray-600 mb-1">Total Price</label>
+					<p class="text-2xl font-bold text-green-700">
+						<span x-text="total() + ' TND'"></span>
+					</p>
+				</div>
+				<!-- Submit -->
+				<div>
+					<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
+						➕ Add Booking
+					</button>
+				</div>
 			</div>
 		</form>
 	</div>
 }
 
 templ CampDropdown(camps []types.CampSite) {
-	<select name="camp_id" class="border p-2 rounded w-full">
-		<option disabled selected>Select a campsite</option>
+	<select
+		name="camp_id"
+		x-model="selectedCamp"
+		class="border p-2 rounded w-full"
+		required
+	>
+		<option disabled value="">Select a campsite</option>
 		for _, camp := range camps {
 			<option value={ camp.ID }>{ camp.Name } - { camp.Location }</option>
 		}

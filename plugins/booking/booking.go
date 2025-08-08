@@ -47,36 +47,23 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	}
 
 	// Parse guests
-	guestsCount, err := strconv.Atoi(kit.Request.FormValue("guestsCount"))
+
+	guests, err := GuestParsing(kit)
+
 	if err != nil {
 		return err
 	}
-	for i := 0; i < guestsCount; i++ {
-		guest := types.Guest{
-			FirstName: kit.Request.FormValue(fmt.Sprintf("guests[%d][first_name]", i)),
-			LastName:  kit.Request.FormValue(fmt.Sprintf("guests[%d][last_name]", i)),
-			CIN:       kit.Request.FormValue(fmt.Sprintf("guests[%d][cin]", i)),
-		}
-		booking.Guests = append(booking.Guests, guest)
-	}
 
-	// Parse services
-	for k, v := range kit.Request.Form {
-		if strings.HasPrefix(k, "service[") {
-			idStr := strings.TrimSuffix(strings.TrimPrefix(k, "service["), "]")
-			serviceID, _ := strconv.Atoi(idStr)
-			qty, err := strconv.Atoi(v[0])
-			if err != nil {
-				return err
-			}
-			if qty > 0 {
-				booking.Services = append(booking.Services, types.BookingService{
-					ServiceID: uint(serviceID),
-					Quantity:  qty,
-				})
-			}
-		}
+	booking.Guests = guests
+
+	//Parse services
+
+	bookingServices, err := BookingServiceParsing(kit)
+
+	if err != nil {
+		return err
 	}
+	booking.Services = bookingServices
 
 	// Create booking with nested associations
 	if err := db.Get().Create(&booking).Error; err != nil {
@@ -85,4 +72,44 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	}
 
 	return kit.Redirect(http.StatusSeeOther, "/")
+}
+
+func GuestParsing(kit *kit.Kit) ([]types.Guest, error) {
+	var guests []types.Guest
+	guestsCount, err := strconv.Atoi(kit.Request.FormValue("guestsCount"))
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < guestsCount; i++ {
+		guest := types.Guest{
+			FirstName: kit.Request.FormValue(fmt.Sprintf("guests[%d][first_name]", i)),
+			LastName:  kit.Request.FormValue(fmt.Sprintf("guests[%d][last_name]", i)),
+			CIN:       kit.Request.FormValue(fmt.Sprintf("guests[%d][cin]", i)),
+		}
+		guests = append(guests, guest)
+	}
+	return guests, nil
+
+}
+
+func BookingServiceParsing(kit *kit.Kit) ([]types.BookingService, error) {
+	var services []types.BookingService
+	for k, v := range kit.Request.Form {
+		if strings.HasPrefix(k, "service[") {
+			idStr := strings.TrimSuffix(strings.TrimPrefix(k, "service["), "]")
+			serviceID, _ := strconv.Atoi(idStr)
+			qty, err := strconv.Atoi(v[0])
+			if err != nil {
+				return nil, err
+			}
+			if qty > 0 {
+				services = append(services, types.BookingService{
+					ServiceID: uint(serviceID),
+					Quantity:  qty,
+				})
+			}
+		}
+	}
+
+	return services, nil
 }

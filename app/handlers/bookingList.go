@@ -4,7 +4,9 @@ import (
 	"explorer/app/db"
 	"explorer/app/types"
 	"explorer/app/views/landing"
+	"explorer/plugins/booking"
 	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/anthdm/superkit/kit"
@@ -118,7 +120,7 @@ func BookingShowDetail(kit *kit.Kit) error {
 	return kit.Render(landing.BookingDetailModal(booking))
 }
 
-func BookingAdminAdd(kit *kit.Kit) error {
+func BookingAdmin(kit *kit.Kit) error {
 	strUserID := chi.URLParam(kit.Request, "user_id")
 
 	userID, err := strconv.Atoi(strUserID)
@@ -165,4 +167,61 @@ func GetAllAvailableCamps() ([]types.CampSite, error) {
 		return nil, err
 	}
 	return camps, nil
+}
+
+func AdminBookingAdd(kit *kit.Kit) error {
+
+	var addBooking types.Bookings
+	//  Parse form
+	if err := kit.Request.ParseForm(); err != nil {
+		return err
+	}
+
+	strUserID := chi.URLParam(kit.Request, "userID")
+	userID, err := strconv.Atoi(strUserID)
+	if err != nil {
+		return err
+	}
+
+	strCampID := kit.Request.FormValue("camp_id")
+
+	campID, err := strconv.Atoi(strCampID)
+	if err != nil {
+		return err
+	}
+
+	specialRequest := kit.Request.FormValue("specialRequest")
+	strTotalPrice := kit.Request.FormValue("totalPrice")
+
+	totalPrice, err := strconv.ParseFloat(strTotalPrice, 64)
+	if err != nil {
+		return err
+	}
+
+	guests, err := booking.GuestParsing(kit)
+	if err != nil {
+		return err
+	}
+	bookingServices, err := booking.BookingServiceParsing(kit)
+	if err != nil {
+		return err
+	}
+
+	addBooking = types.Bookings{
+		UserID:         uint(userID),
+		CampID:         uint(campID),
+		SpecialRequest: specialRequest,
+		TotalPrice:     totalPrice,
+		Guests:         guests,
+		Services:       bookingServices,
+		Status:         types.StatusBooked,
+		PaymentStatus:  types.StatusCompleted,
+		PaymentMethod:  types.CashPaymentMethod,
+	}
+
+	if err := db.Get().Create(&addBooking).Error; err != nil {
+		return err
+	}
+
+	return kit.Redirect(http.StatusSeeOther, "/admin/booking/list")
 }

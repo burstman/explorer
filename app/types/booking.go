@@ -3,10 +3,12 @@ package types
 import "gorm.io/gorm"
 
 const (
-	StatusPending   = "pending"
-	StatusBooked    = "booked"
-	StatusCancelled = "cancelled"
-	StatusCompleted = "completed"
+	StatusPending        = "pending"
+	StatusBooked         = "booked"
+	StatusCancelled      = "cancelled"
+	StatusCompleted      = "completed"
+	CashPaymentMethod    = "cash"
+	OnlinePayumentMethod = "online"
 )
 
 type Bookings struct {
