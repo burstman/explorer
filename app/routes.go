@@ -83,6 +83,7 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Post("/admin/services/create", kit.Handler(services.HandleServiceCreate))
 		app.Post("/user/bookings", kit.Handler(booking.HandelCreateBooking))
 		app.Post("/admin/bookings/{userID}/create", kit.Handler(handlers.AdminBookingAdd))
+		app.Post("/admin/bookings/{Bookid}/edit", kit.Handler(handlers.EditPostBooking))
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))

@@ -5,9 +5,11 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 	"explorer/plugins/booking"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/go-chi/chi/v5"
@@ -231,6 +233,94 @@ func AdminBookingAdd(kit *kit.Kit) error {
 
 	if err := db.Get().Create(&addBooking).Error; err != nil {
 		return err
+	}
+
+	return kit.Redirect(http.StatusSeeOther, "/admin/booking/list")
+}
+
+func EditPostBooking(kit *kit.Kit) error {
+	// Get booking ID from URL
+	strBookID := chi.URLParam(kit.Request, "Bookid")
+	bookingID, err := strconv.Atoi(strBookID)
+	if err != nil {
+		return fmt.Errorf("invalid booking ID: %w", err)
+	}
+
+	// Load existing booking
+	var booking types.Bookings
+	if err := db.Get().
+		Preload("Guests").
+		Preload("Services").
+		First(&booking, bookingID).Error; err != nil {
+		return fmt.Errorf("booking not found: %w", err)
+	}
+
+	// Parse form values
+	if err := kit.Request.ParseForm(); err != nil {
+		return fmt.Errorf("parse form: %w", err)
+	}
+
+	// Camp selection
+	campID, _ := strconv.Atoi(kit.Request.FormValue("camp_id"))
+	booking.CampID = uint(campID)
+
+	// Special requests
+	booking.SpecialRequest = kit.Request.FormValue("specialRequest")
+
+	// Guests
+	guestsCount, _ := strconv.Atoi(kit.Request.FormValue("guestsCount"))
+
+	log.Println("guestcount:", guestsCount)
+	newGuests := make([]types.Guest, 0, guestsCount)
+	for i := 0; i < guestsCount; i++ {
+		first := kit.Request.FormValue(fmt.Sprintf("guests[%d][first_name]", i))
+		last := kit.Request.FormValue(fmt.Sprintf("guests[%d][last_name]", i))
+		cin := kit.Request.FormValue(fmt.Sprintf("guests[%d][cin]", i))
+		newGuests = append(newGuests, types.Guest{
+			FirstName: first,
+			LastName:  last,
+			CIN:       cin,
+		})
+	}
+	// Replace old guests
+	for i := range newGuests {
+		newGuests[i].BookingID = booking.ID
+	}
+
+	log.Println("newguests", newGuests)
+	if err := db.Get().Model(&booking).Association("Guests").Replace(newGuests); err != nil {
+		return fmt.Errorf("failed to replace guests: %w", err)
+	}
+	// Services
+	services := []types.BookingService{}
+	for key, vals := range kit.Request.Form {
+		if strings.HasPrefix(key, "services[") {
+			// Extract service ID
+			serviceIDStr := strings.TrimSuffix(strings.TrimPrefix(key, "services["), "]")
+			serviceID, _ := strconv.Atoi(serviceIDStr)
+
+			quantity, _ := strconv.Atoi(vals[0])
+			if quantity > 0 {
+				services = append(services, types.BookingService{
+					ServiceID: uint(serviceID),
+					Quantity:  quantity,
+				})
+			}
+		}
+	}
+	booking.Services = services
+
+	// Total price
+	totalPrice, _ := strconv.ParseFloat(kit.Request.FormValue("totalPrice"), 64)
+	booking.TotalPrice = totalPrice
+
+	booking.Status = kit.Request.FormValue("user_status")
+
+	booking.PaymentStatus = kit.Request.FormValue("payment_status")
+
+	// Save booking
+	if err := db.Get().Save(&booking).Error; err != nil {
+		return fmt.Errorf("update booking: %w", err)
 	}
 
 	return kit.Redirect(http.StatusSeeOther, "/admin/booking/list")

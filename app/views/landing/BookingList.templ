@@ -166,12 +166,18 @@ templ BookingDetailModal(booking types.Bookings) {
 	</div>
 }
 
-templ EditBookingModal(booking types.Bookings, camps []types.CampSite, AvailableServices []types.Service) {
+templ EditBookingModal(
+	booking types.Bookings,
+	camps []types.CampSite,
+	AvailableServices []types.Service,
+) {
+	// Prepare camp prices map
 	{{ campPrices := map[string]float64{} }}
 	{{for _, camp := range camps {
 	campPrices[strconv.Itoa(camp.ID)] = camp.Price
 }
 	}}
+	// Prepare service prices and quantities
 	{{ servicesMap := map[string]float64{} }}
 	{{ serviceQuantity := map[string]int{} }}
 	{{for _, s := range AvailableServices {
@@ -182,6 +188,7 @@ templ EditBookingModal(booking types.Bookings, camps []types.CampSite, Available
 	serviceQuantity[strconv.Itoa(int(bs.ServiceID))] = bs.Quantity
 }
 	}}
+	// Alpine.js data model
 	{{data := map[string]interface{}{
 	"guests":       len(booking.Guests),
 	"services":     serviceQuantity,
@@ -212,7 +219,9 @@ templ EditBookingModal(booking types.Bookings, camps []types.CampSite, Available
 				<select name="camp_id" class="border p-2 rounded w-full" x-model="selectedCamp">
 					<option disabled>Select a campsite</option>
 					for _, camp := range camps {
-						<option value={ camp.ID } selected={ camp.ID == booking.Camp.ID }>{ camp.Name } - { camp.Location }</option>
+						<option value={ camp.ID } selected={ camp.ID == booking.Camp.ID }>
+							{ camp.Name } - { camp.Location }
+						</option>
 					}
 				</select>
 				<!-- Hidden inputs -->
@@ -245,6 +254,7 @@ templ EditBookingModal(booking types.Bookings, camps []types.CampSite, Available
 						class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
 					>{ booking.SpecialRequest }</textarea>
 				</div>
+				@UserAndPaymentStatusDropdown(booking.Status, booking.PaymentStatus)
 				<!-- Total Price -->
 				<div class="text-right mt-4">
 					<label class="block text-sm text-gray-600 mb-1">Total Price</label>
@@ -359,4 +369,34 @@ templ CampDropdown(camps []types.CampSite) {
 			<option value={ camp.ID }>{ camp.Name } - { camp.Location }</option>
 		}
 	</select>
+}
+
+templ UserAndPaymentStatusDropdown(userSelected string, paymentSelected string) {
+	<div class="flex space-x-4">
+		<div class="flex-1">
+			<label for="user_status" class="block mb-1">User Status</label>
+			<select
+				name="user_status"
+				id="user_status"
+				class="border p-2 rounded w-full"
+			>
+				<option value="booked" selected={ userSelected == "booked" }>Active</option>
+				<option value="not booked" selected={ userSelected == "not booked" }>Inactive</option>
+				<option value="canceled" selected={ userSelected == "canceled" }>Suspended</option>
+			</select>
+		</div>
+		<div class="flex-1">
+			<label for="payment_status" class="block mb-1">Payment Status</label>
+			<select
+				name="payment_status"
+				id="payment_status"
+				class="border p-2 rounded w-full"
+			>
+				<option value="pending" selected={ paymentSelected == "pending" }>Pending</option>
+				<option value="paid" selected={ paymentSelected == "paid" }>Paid</option>
+				<option value="refunded" selected={ paymentSelected == "refunded" }>Refunded</option>
+				<option value="failed" selected={ paymentSelected == "failed" }>Failed</option>
+			</select>
+		</div>
+	</div>
 }
