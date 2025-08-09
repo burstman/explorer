@@ -90,7 +90,17 @@ func EditBooking(kit *kit.Kit) error {
 	if err != nil {
 		return err
 	}
-	return kit.Render(landing.EditBookingModal(booking, camps))
+
+	// Get available services
+	var availableServices []types.Service
+	err = db.Get().
+		Order("created_at asc").
+		Find(&availableServices).Error
+	if err != nil {
+		log.Println("Failed to fetch services:", err)
+		return err
+	}
+	return kit.Render(landing.EditBookingModal(booking, camps, availableServices))
 
 }
 

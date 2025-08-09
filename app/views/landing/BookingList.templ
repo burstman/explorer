@@ -166,57 +166,101 @@ templ BookingDetailModal(booking types.Bookings) {
 	</div>
 }
 
-templ EditBookingModal(booking types.Bookings, camps []types.CampSite) {
-	<form
-		hx-put={ "/admin/bookings/" + fmt.Sprint(booking.ID) }
-		hx-target="#modal-content"
-		hx-swap="innerHTML"
-		class="space-y-6"
-	>
-		<!-- Campsite Selection -->
-		<label class="block text-sm font-medium text-gray-700">Campsite</label>
-		<select name="camp_id" class="w-full border rounded-md px-3 py-2">
-			for _, camp := range camps {
-				<option value={ camp.ID } selected={ int(booking.CampID) == camp.ID }>
-					{ camp.Name } ({ camp.AvailableFrom.Format("2006-01-02") })
-				</option>
+templ EditBookingModal(booking types.Bookings, camps []types.CampSite, AvailableServices []types.Service) {
+	{{ campPrices := map[string]float64{} }}
+	{{for _, camp := range camps {
+	campPrices[strconv.Itoa(camp.ID)] = camp.Price
+}
+	}}
+	{{ servicesMap := map[string]float64{} }}
+	{{ serviceQuantity := map[string]int{} }}
+	{{for _, s := range AvailableServices {
+	servicesMap[strconv.Itoa(int(s.ID))] = s.Price
+}
+	}}
+	{{for _, bs := range booking.Services {
+	serviceQuantity[strconv.Itoa(int(bs.ServiceID))] = bs.Quantity
+}
+	}}
+	{{data := map[string]interface{}{
+	"guests":       len(booking.Guests),
+	"services":     serviceQuantity,
+	"servicesData": servicesMap,
+	"selectedCamp": strconv.Itoa(booking.Camp.ID),
+	"campPrices":   campPrices,
+}
+	}}
+	<div
+		x-data={ templ.JSONString(data) }
+		x-init={ `total = () => {
+			let servicesTotal = 0;
+			for (const id in services) {
+				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
 			}
-		</select>
-		<!-- Guests -->
-		<h3 class="text-sm font-semibold">Guests</h3>
-		for i, guest := range booking.Guests {
-			<div class="grid grid-cols-4 gap-3 items-center">
-				<input type="hidden" name={ fmt.Sprintf("guests[%d][id]", i) } value={ fmt.Sprint(guest.ID) }/>
-				<input type="text" name={ fmt.Sprintf("guests[%d][first_name]", i) } value={ guest.FirstName } class="border rounded px-2 py-1"/>
-				<input type="text" name={ fmt.Sprintf("guests[%d][last_name]", i) } value={ guest.LastName } class="border rounded px-2 py-1"/>
-				<input type="text" name={ fmt.Sprintf("guests[%d][cin]", i) } value={ guest.CIN } class="border rounded px-2 py-1"/>
+			const campPrice = campPrices[selectedCamp] || 0;
+			const guestsCount = parseInt(guests) || 0;
+			const totalCamp = (1 + guestsCount) * campPrice;
+			return (totalCamp + servicesTotal).toFixed(2);
+		};` }
+		class="p-6 bg-white rounded-md shadow-md"
+	>
+		<form method="post" action={ fmt.Sprintf("/admin/bookings/%d/edit", booking.ID) } class="space-y-6">
+			<h2 class="text-xl font-bold mb-4">Admin Edit Booking</h2>
+			<div class="overflow-y-auto max-h-[70vh] pr-2 space-y-6">
+				<!-- Camp Dropdown -->
+				<label for="camp_id" class="block mb-1">Select Camp</label>
+				<select name="camp_id" class="border p-2 rounded w-full" x-model="selectedCamp">
+					<option disabled>Select a campsite</option>
+					for _, camp := range camps {
+						<option value={ camp.ID } selected={ camp.ID == booking.Camp.ID }>{ camp.Name } - { camp.Location }</option>
+					}
+				</select>
+				<!-- Hidden inputs -->
+				<input type="hidden" name="userID" value={ strconv.Itoa(int(booking.User.ID)) }/>
+				<input type="hidden" name="totalPrice" :value="total()"/>
+				<input type="hidden" name="guestsCount" :value="guests"/>
+				<!-- User Info -->
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="text-sm text-gray-600">First Name</label>
+						<input type="text" value={ booking.User.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+					<div>
+						<label class="text-sm text-gray-600">Last Name</label>
+						<input type="text" value={ booking.User.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+				</div>
+				<!-- Guests Info -->
+				@GuestFormFields(booking.Guests)
+				<!-- Services -->
+				@AdditionalServices(AvailableServices)
+				<!-- Special Requests -->
+				<div>
+					<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+					<textarea
+						name="specialRequest"
+						id="specialRequest"
+						rows="3"
+						placeholder="User special requests"
+						class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+					>{ booking.SpecialRequest }</textarea>
+				</div>
+				<!-- Total Price -->
+				<div class="text-right mt-4">
+					<label class="block text-sm text-gray-600 mb-1">Total Price</label>
+					<p class="text-2xl font-bold text-green-700">
+						<span x-text="total() + ' TND'"></span>
+					</p>
+				</div>
+				<!-- Submit -->
+				<div>
+					<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
+						💾 Save Changes
+					</button>
+				</div>
 			</div>
-		}
-		<!-- Admin can add new blank guests in frontend via JS (or expose add/remove buttons) -->
-		<!-- Services -->
-		<h3 class="text-sm font-semibold">Services</h3>
-		for i, bs := range booking.Services {
-			<div class="grid grid-cols-5 gap-3 items-center">
-				<input type="hidden" name={ fmt.Sprintf("services[%d][id]", i) } value={ fmt.Sprint(bs.ID) }/>
-				<input type="hidden" name={ fmt.Sprintf("services[%d][service_id]", i) } value={ fmt.Sprint(bs.ServiceID) }/>
-				<span class="col-span-2 text-gray-800">{ bs.Service.Name }</span>
-				<input type="number" name={ fmt.Sprintf("services[%d][quantity]", i) } value={ fmt.Sprint(bs.Quantity) } class="border rounded px-2 py-1 w-20"/>
-				<span class="text-sm text-gray-500">{ fmt.Sprintf("%.2f", bs.Service.Price) } TND</span>
-			</div>
-		}
-		<!-- Special Requests -->
-		<label class="block text-sm font-medium text-gray-700">Special Request</label>
-		<textarea name="special_request" class="w-full border px-3 py-2 rounded" rows="2">{ booking.SpecialRequest }</textarea>
-		<!-- Total (from backend) -->
-		<div class="border-t pt-2 mt-2 text-right">
-			<span class="text-lg font-semibold">Total: </span>
-			<span class="text-green-700 font-bold">{ fmt.Sprintf("%.2f TND", booking.TotalPrice) }</span>
-		</div>
-		<!-- Save -->
-		<div class="text-right">
-			<button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md">💾 Save</button>
-		</div>
-	</form>
+		</form>
+	</div>
 }
 
 templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service, camps []types.CampSite) {
@@ -277,7 +321,7 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 					</div>
 				</div>
 				<!-- Guests Info (reuse) -->
-				@GuestFormFields()
+				@GuestFormFields(nil)
 				<!-- Services (reuse) -->
 				@AdditionalServices(AvailableServices)
 				<!-- Special Requests -->

@@ -148,7 +148,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 			</div>
 		</div>
 		<!-- Number of Guests -->
-		@GuestFormFields()
+		@GuestFormFields(nil)
 		<!-- Additional Services -->
 		@AdditionalServices(Allservice)
 		<!-- Special Requests -->
@@ -165,7 +165,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 	</form>
 }
 
-templ GuestFormFields() {
+templ GuestFormFields(guests []types.Guest) {
 	<div>
 		<label for="guests" class="block text-sm font-medium text-gray-700">Number of Guests</label>
 		<select
@@ -177,23 +177,62 @@ templ GuestFormFields() {
 		>
 			<option value="">Select number of guests</option>
 			for i := 0; i <= 10; i++ {
-				<option value={ strconv.Itoa(i) }>{ i }</option>
+				<option value={ strconv.Itoa(i) } selected={ len(guests) == i }>{ i }</option>
 			}
-			<option value="10+">10+</option>
+			<option value="10+" selected={ len(guests) > 10 }>10+</option>
 		</select>
 		<!-- Guest Details -->
-		<div class="mt-6 space-y-4">
-			<template x-for="i in Number(guests)">
-				<div class="p-4 border rounded-lg bg-gray-50 space-y-2">
-					<h4 class="font-semibold text-sm text-gray-700">Guest <span x-text="i"></span></h4>
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<input type="text" :name="'guests[' + (i-1) + '][first_name]'" placeholder="First Name" required class="w-full border px-3 py-2 rounded-md"/>
-						<input type="text" :name="'guests[' + (i-1) + '][last_name]'" placeholder="Last Name" required class="w-full border px-3 py-2 rounded-md"/>
-						<input type="text" :name="'guests[' + (i-1) + '][cin]'" placeholder="CIN (optional)" class="w-full border px-3 py-2 rounded-md"/>
+		for i:=0; i < len(guests); i++ {
+			<div class="mt-6 space-y-4">
+				<template x-for="i in Number(guests)">
+					<div class="p-4 border rounded-lg bg-gray-50 space-y-2">
+						<h4 class="font-semibold text-sm text-gray-700">
+							Guest <span x-text="i"></span>
+						</h4>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<input
+								type="text"
+								:name={ fmt.Sprintf("guests[' + %d + '][first_name]", i) }
+								placeholder="First Name"
+								required
+								class="w-full border px-3 py-2 rounded-md"
+								value={ func() string {
+								if (i-1) < len(guests) {
+									return guests[i-1].FirstName
+								}
+								return ""
+							}() }
+							/>
+							<input
+								type="text"
+								:name={ fmt.Sprintf("guests[' + %d + '][last_name]", i) }
+								placeholder="Last Name"
+								required
+								class="w-full border px-3 py-2 rounded-md"
+								value={ func() string {
+								if (i-1) < len(guests) {
+									return guests[i-1].LastName
+								}
+								return ""
+							}() }
+							/>
+							<input
+								type="text"
+								:name="'guests[' + (i-1) + '][cin]'"
+								placeholder="CIN (optional)"
+								class="w-full border px-3 py-2 rounded-md"
+								value={ func() string {
+								if (i-1) < len(guests) {
+									return guests[i-1].CIN
+								}
+								return ""
+							}() }
+							/>
+						</div>
 					</div>
-				</div>
-			</template>
-		</div>
+				</template>
+			</div>
+		}
 	</div>
 }
 
