@@ -188,9 +188,20 @@ templ EditBookingModal(
 	serviceQuantity[strconv.Itoa(int(bs.ServiceID))] = bs.Quantity
 }
 	}}
+	// Prepare initial guests array
+	{{ initialGuests := []map[string]string{} }}
+	{{for _, g := range booking.Guests {
+	initialGuests = append(initialGuests, map[string]string{
+		"first_name": g.FirstName,
+		"last_name":  g.LastName,
+		"cin":        g.CIN,
+	})
+}
+	}}
 	// Alpine.js data model
 	{{data := map[string]interface{}{
-	"guests":       len(booking.Guests),
+	"guestCount":   len(initialGuests),
+	"guests":       initialGuests,
 	"services":     serviceQuantity,
 	"servicesData": servicesMap,
 	"selectedCamp": strconv.Itoa(booking.Camp.ID),
@@ -199,16 +210,28 @@ templ EditBookingModal(
 	}}
 	<div
 		x-data={ templ.JSONString(data) }
-		x-init={ `total = () => {
-			let servicesTotal = 0;
-			for (const id in services) {
-				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
-			}
-			const campPrice = campPrices[selectedCamp] || 0;
-			const guestsCount = parseInt(guests) || 0;
-			const totalCamp = (1 + guestsCount) * campPrice;
-			return (totalCamp + servicesTotal).toFixed(2);
-		};` }
+		x-init={ `
+			$watch('guestCount', value => {
+				if (value > guests.length) {
+					for (let i = guests.length; i < value; i++) {
+						guests.push({ first_name: '', last_name: '', cin: '' });
+					}
+				} else if (value < guests.length) {
+					guests.splice(value);
+				}
+			});
+
+			total = () => {
+				let servicesTotal = 0;
+				for (const id in services) {
+					servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+				}
+				const campPrice = campPrices[selectedCamp] || 0;
+				const guestsCount = parseInt(guestCount) || 0;
+				const totalCamp = (1 + guestsCount) * campPrice;
+				return (totalCamp + servicesTotal).toFixed(2);
+			};
+		` }
 		class="p-6 bg-white rounded-md shadow-md"
 	>
 		<form method="post" action={ fmt.Sprintf("/admin/bookings/%d/edit", booking.ID) } class="space-y-6">
@@ -227,7 +250,7 @@ templ EditBookingModal(
 				<!-- Hidden inputs -->
 				<input type="hidden" name="userID" value={ strconv.Itoa(int(booking.User.ID)) }/>
 				<input type="hidden" name="totalPrice" :value="total()"/>
-				<input type="hidden" name="guestsCount" :value="guests"/>
+				<input type="hidden" name="guestsCount" :value="guestCount"/>
 				<!-- User Info -->
 				<div class="grid grid-cols-2 gap-4">
 					<div>
@@ -240,7 +263,7 @@ templ EditBookingModal(
 					</div>
 				</div>
 				<!-- Guests Info -->
-				@GuestFormFields(booking.Guests)
+				@GuestFormFields()
 				<!-- Services -->
 				@AdditionalServices(AvailableServices)
 				<!-- Special Requests -->
@@ -254,6 +277,7 @@ templ EditBookingModal(
 						class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
 					>{ booking.SpecialRequest }</textarea>
 				</div>
+				<!-- Status Dropdowns -->
 				@UserAndPaymentStatusDropdown(booking.Status, booking.PaymentStatus)
 				<!-- Total Price -->
 				<div class="text-right mt-4">
@@ -287,7 +311,8 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 }
 	}}
 	{{data := map[string]interface{}{
-	"guests":       0,
+	"guestCount":   0,
+	"guests":       []map[string]string{},
 	"services":     serviceQuantity,
 	"servicesData": servicesMap,
 	"selectedCamp": "",
@@ -296,29 +321,38 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 	}}
 	<div
 		x-data={ templ.JSONString(data) }
-		x-init={ `total = () => {
-			let servicesTotal = 0;
-			for (const id in services) {
-				servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
-			}
-			const campPrice = campPrices[selectedCamp] || 0;
-			const guestsCount = parseInt(guests) || 0;
-			const totalCamp = (1 + guestsCount) * campPrice;
+		x-init={ `
+			$watch('guestCount', value => {
+				if (value > guests.length) {
+					for (let i = guests.length; i < value; i++) {
+						guests.push({ first_name: '', last_name: '', cin: '' });
+					}
+				} else if (value < guests.length) {
+					guests.splice(value);
+				}
+			});
 
-			return (totalCamp + servicesTotal).toFixed(2);
-		};` }
+			total = () => {
+				let servicesTotal = 0;
+				for (const id in services) {
+					servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+				}
+				const campPrice = campPrices[selectedCamp] || 0;
+				const guestsCount = parseInt(guestCount) || 0;
+				const totalCamp = (1 + guestsCount) * campPrice;
+				return (totalCamp + servicesTotal).toFixed(2);
+			};
+		` }
 		class="p-6 bg-white rounded-md shadow-md"
 	>
-		<form method="post" action={ (fmt.Sprintf("/admin/bookings/%d/create", user.ID)) } class="space-y-6">
+		<form method="post" action={ fmt.Sprintf("/admin/bookings/%d/create", user.ID) } class="space-y-6">
 			<h2 class="text-xl font-bold mb-4">Admin Booking</h2>
 			<div class="overflow-y-auto max-h-[70vh] pr-2 space-y-6">
 				<!-- Camp Dropdown -->
 				<label for="camp_id" class="block mb-1">Select Camp</label>
 				@CampDropdown(camps)
 				<!-- Hidden inputs -->
-				//<input type="hidden" name="userID" value={ strconv.Itoa(int(user.ID)) }/>
 				<input type="hidden" name="totalPrice" :value="total()"/>
-				<input type="hidden" name="guestsCount" :value="guests"/>
 				<!-- User Info -->
 				<div class="grid grid-cols-2 gap-4">
 					<div>
@@ -330,9 +364,9 @@ templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service
 						<input type="text" value={ user.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
 					</div>
 				</div>
-				<!-- Guests Info (reuse) -->
-				@GuestFormFields(nil)
-				<!-- Services (reuse) -->
+				<!-- Guests Info -->
+				@GuestFormFields()
+				<!-- Services -->
 				@AdditionalServices(AvailableServices)
 				<!-- Special Requests -->
 				<div>

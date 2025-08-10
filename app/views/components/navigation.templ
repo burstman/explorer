@@ -105,16 +105,18 @@ templ login(isLoggedIn bool, Role string) {
 				<a href="/profile" class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white">Profile</a>
 				if Role == "admin" {
 					<a
+						@click="modalOpen = true"
 						hx-get="/admin/buses"
 						hx-target="#modal-content"
 						hx-swap="innerHTML"
-						class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
+						class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
 					>🚌 Configure Buses</a>
 					<a
+						@click="modalOpen = true"
 						hx-get="/admin/services"
 						hx-target="#modal-content"
 						hx-swap="innerHTML"
-						class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
+						class=" block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
 					>Configure Services</a>
 				}
 				<a

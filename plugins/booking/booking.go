@@ -23,11 +23,11 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	auth := kit.Auth().(types.AuthUser)
 	campID, err := strconv.Atoi(kit.Request.FormValue("campID"))
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid camp id in HandelCreateBooking: %v ", err)
 	}
 	totalPrice, err := strconv.ParseFloat(kit.Request.FormValue("totalPrice"), 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid totalPrice  in HandelCreateBooking: %v ", err)
 	}
 	paymentMethod := kit.Request.FormValue("payment_method")
 	status := kit.Request.FormValue("userStatus")
@@ -78,7 +78,7 @@ func GuestParsing(kit *kit.Kit) ([]types.Guest, error) {
 	var guests []types.Guest
 	guestsCount, err := strconv.Atoi(kit.Request.FormValue("guestsCount"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid guestcount  in GuestParsing: %v ", err)
 	}
 	for i := 0; i < guestsCount; i++ {
 		guest := types.Guest{
@@ -97,10 +97,14 @@ func BookingServiceParsing(kit *kit.Kit) ([]types.BookingService, error) {
 	for k, v := range kit.Request.Form {
 		if strings.HasPrefix(k, "service[") {
 			idStr := strings.TrimSuffix(strings.TrimPrefix(k, "service["), "]")
-			serviceID, _ := strconv.Atoi(idStr)
+			serviceID, err := strconv.Atoi(idStr)
+			if err != nil {
+				return nil, fmt.Errorf("invalid service in BookingServiceParsing: %v ", err)
+			}
+
 			qty, err := strconv.Atoi(v[0])
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid quantity  in BookingServiceParsing: %v ", err)
 			}
 			if qty > 0 {
 				services = append(services, types.BookingService{

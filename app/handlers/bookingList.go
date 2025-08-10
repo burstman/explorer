@@ -269,8 +269,8 @@ func EditPostBooking(kit *kit.Kit) error {
 
 	// Guests
 	guestsCount, _ := strconv.Atoi(kit.Request.FormValue("guestsCount"))
-
 	log.Println("guestcount:", guestsCount)
+
 	newGuests := make([]types.Guest, 0, guestsCount)
 	for i := 0; i < guestsCount; i++ {
 		first := kit.Request.FormValue(fmt.Sprintf("guests[%d][first_name]", i))
@@ -280,17 +280,21 @@ func EditPostBooking(kit *kit.Kit) error {
 			FirstName: first,
 			LastName:  last,
 			CIN:       cin,
+			BookingID: uint(bookingID),
 		})
 	}
-	// Replace old guests
-	for i := range newGuests {
-		newGuests[i].BookingID = booking.ID
+	log.Println("newguests", newGuests)
+
+	// Delete old guests and insert new ones
+	if err := db.Get().Where("booking_id = ?", bookingID).Delete(&types.Guest{}).Error; err != nil {
+		return fmt.Errorf("delete old guests: %w", err)
+	}
+	if len(newGuests) > 0 {
+		if err := db.Get().Create(&newGuests).Error; err != nil {
+			return fmt.Errorf("insert new guests: %w", err)
+		}
 	}
 
-	log.Println("newguests", newGuests)
-	if err := db.Get().Model(&booking).Association("Guests").Replace(newGuests); err != nil {
-		return fmt.Errorf("failed to replace guests: %w", err)
-	}
 	// Services
 	services := []types.BookingService{}
 	for key, vals := range kit.Request.Form {
@@ -304,22 +308,37 @@ func EditPostBooking(kit *kit.Kit) error {
 				services = append(services, types.BookingService{
 					ServiceID: uint(serviceID),
 					Quantity:  quantity,
+					BookingID: uint(bookingID),
 				})
 			}
 		}
 	}
-	booking.Services = services
+	// Delete old services and insert new ones
+	if err := db.Get().Where("booking_id = ?", bookingID).Delete(&types.BookingService{}).Error; err != nil {
+		return fmt.Errorf("delete old services: %w", err)
+	}
+	if len(services) > 0 {
+		if err := db.Get().Create(&services).Error; err != nil {
+			return fmt.Errorf("insert new services: %w", err)
+		}
+	}
 
 	// Total price
 	totalPrice, _ := strconv.ParseFloat(kit.Request.FormValue("totalPrice"), 64)
 	booking.TotalPrice = totalPrice
 
+	// Status updates
 	booking.Status = kit.Request.FormValue("user_status")
-
 	booking.PaymentStatus = kit.Request.FormValue("payment_status")
 
-	// Save booking
-	if err := db.Get().Save(&booking).Error; err != nil {
+	// Save booking main fields
+	if err := db.Get().Model(&booking).Updates(map[string]interface{}{
+		"camp_id":         booking.CampID,
+		"special_request": booking.SpecialRequest,
+		"total_price":     booking.TotalPrice,
+		"status":          booking.Status,
+		"payment_status":  booking.PaymentStatus,
+	}).Error; err != nil {
 		return fmt.Errorf("update booking: %w", err)
 	}
 
