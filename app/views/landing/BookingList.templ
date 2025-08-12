@@ -38,8 +38,18 @@ templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 				class="px-3 py-2 border rounded"
 			>
 				<option>All User Statuses</option>
-				<option>Verified</option>
-				<option>Unverified</option>
+				for _, uStatus:=range statusOption.UserStatuses {
+					<option>{ uStatus }</option>
+				}
+			</select>
+			<select
+				name="payment_method"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
+				<option>All Payment Methodes</option>
+				<option>cash</option>
+				<option>online</option>
 			</select>
 			<button
 				type="submit"
@@ -143,6 +153,9 @@ templ BookingDetailModal(booking types.Bookings) {
 		<div class="space-y-2 text-sm text-gray-700">
 			<p><strong>Booking ID:</strong> { booking.ID }</p>
 			<p><strong>Customer:</strong> { booking.User.FirstName } { booking.User.LastName } ({ booking.User.Email })</p>
+			<p><strong>Phone:</strong>{ booking.User.PhoneNumber }</p>
+			<p><strong>CIN:</strong>{ booking.User.Cin }</p>
+			<p><strong>Social Link:</strong>{ booking.User.SocialLink }</p>
 			<p><strong>Camp:</strong> { booking.Camp.Name }</p>
 			<p><strong>Booking Date:</strong> { booking.CreatedAt.Format("2006-01-02 15:04") }</p>
 			<p><strong>Status:</strong> <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span></p>
@@ -439,9 +452,9 @@ templ UserAndPaymentStatusDropdown(userSelected string, paymentSelected string) 
 				id="user_status"
 				class="border p-2 rounded w-full"
 			>
-				<option value="booked" selected={ userSelected == "booked" }>Active</option>
-				<option value="not booked" selected={ userSelected == "not booked" }>Inactive</option>
-				<option value="canceled" selected={ userSelected == "canceled" }>Suspended</option>
+				<option value="booked" selected={ userSelected == "booked" }>Booked</option>
+				<option value="not booked" selected={ userSelected == "not booked" }>Not Booked</option>
+				<option value="canceled" selected={ userSelected == "canceled" }>Canceled</option>
 			</select>
 		</div>
 		<div class="flex-1">

@@ -12,9 +12,14 @@ import (
 )
 
 func HandleBookingSearch(kit *kit.Kit) error {
-	q := strings.TrimSpace(kit.Request.URL.Query().Get("q"))
-	paymentStatus := kit.Request.URL.Query().Get("payment_status")
-	userStatus := kit.Request.URL.Query().Get("user_status")
+	if err := kit.Request.ParseForm(); err != nil {
+		return err
+	}
+
+	q := strings.TrimSpace(kit.Request.FormValue("q"))
+	paymentStatus := kit.Request.FormValue("payment_status")
+	userStatus := kit.Request.FormValue("user_status")
+	payMethod := kit.Request.FormValue("payment_method")
 
 	var users []types.User
 	query := db.Get().
@@ -38,6 +43,11 @@ func HandleBookingSearch(kit *kit.Kit) error {
 	if userStatus != "" && userStatus != "All User Statuses" {
 		query = query.Joins("JOIN bookings b2 ON b2.user_id = users.id AND b2.deleted_at IS NULL").
 			Where("b2.status = ?", strings.ToLower(userStatus))
+	}
+
+	if payMethod != "" && payMethod != "All Payment Methodes" {
+		query = query.Joins("JOIN bookings b3 ON b3.user_id = users.id AND b3.deleted_at IS NULL").
+			Where("b3.payment_method = ?", strings.ToLower(payMethod))
 	}
 
 	if err := query.Find(&users).Error; err != nil && err != gorm.ErrRecordNotFound {
