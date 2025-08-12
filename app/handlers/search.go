@@ -22,32 +22,29 @@ func HandleBookingSearch(kit *kit.Kit) error {
 	payMethod := kit.Request.FormValue("payment_method")
 
 	var users []types.User
-	query := db.Get().
+	query := db.Get().Model(&types.User{}).
 		Preload("Bookings.Camp").
 		Preload("Bookings.Guests").
 		Preload("Bookings.Services.Service").
-		Where("role <> ?", "admin") // exclude admin users
+		Where("role <> ?", "admin").
+		Joins("LEFT JOIN bookings b ON b.user_id = users.id AND b.deleted_at IS NULL").
+		Joins("LEFT JOIN campsites ON campsites.id = b.camp_id")
 
 	if q != "" {
-		query = query.Joins("LEFT JOIN bookings ON bookings.user_id = users.id AND bookings.deleted_at IS NULL").
-			Joins("LEFT JOIN campsites ON campsites.id = bookings.camp_id").
-			Where(`first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ? OR campsites.title ILIKE ?`,
-				"%"+q+"%", "%"+q+"%", "%"+q+"%", "%"+q+"%")
+		query = query.Where(`first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ? OR campsites.title ILIKE ?`,
+			"%"+q+"%", "%"+q+"%", "%"+q+"%", "%"+q+"%")
 	}
 
 	if paymentStatus != "" && paymentStatus != "All Payment Statuses" {
-		query = query.Joins("JOIN bookings ON bookings.user_id = users.id AND bookings.deleted_at IS NULL").
-			Where("bookings.payment_status = ?", strings.ToLower(paymentStatus))
+		query = query.Where("b.payment_status = ?", strings.ToLower(paymentStatus))
 	}
 
-	if userStatus != "" && userStatus != "All User Statuses" {
-		query = query.Joins("JOIN bookings b2 ON b2.user_id = users.id AND b2.deleted_at IS NULL").
-			Where("b2.status = ?", strings.ToLower(userStatus))
+	if userStatus != "" && userStatus != "All User Booking Statuses" {
+		query = query.Where("b.status = ?", strings.ToLower(userStatus))
 	}
 
-	if payMethod != "" && payMethod != "All Payment Methodes" {
-		query = query.Joins("JOIN bookings b3 ON b3.user_id = users.id AND b3.deleted_at IS NULL").
-			Where("b3.payment_method = ?", strings.ToLower(payMethod))
+	if payMethod != "" && payMethod != "All Payment Methods" {
+		query = query.Where("b.payment_method = ?", strings.ToLower(payMethod))
 	}
 
 	if err := query.Find(&users).Error; err != nil && err != gorm.ErrRecordNotFound {

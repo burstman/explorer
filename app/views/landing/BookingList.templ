@@ -7,7 +7,7 @@ import (
 )
 
 templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
-	<section class="px-6 py-10 max-w-7xl mx-auto">
+	<section x-data="{ selectedBookings: [] }" class="px-6 py-10 max-w-7xl mx-auto">
 		<!-- Filters -->
 		<form
 			hx-get="/admin/bookings/search"
@@ -37,7 +37,7 @@ templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 				hx-trigger="change"
 				class="px-3 py-2 border rounded"
 			>
-				<option>All User Statuses</option>
+				<option>All User Booking Statuses</option>
 				for _, uStatus:=range statusOption.UserStatuses {
 					<option>{ uStatus }</option>
 				}
@@ -47,7 +47,7 @@ templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 				hx-trigger="change"
 				class="px-3 py-2 border rounded"
 			>
-				<option>All Payment Methodes</option>
+				<option>All Payment Methods</option>
 				<option>cash</option>
 				<option>online</option>
 			</select>
@@ -63,11 +63,20 @@ templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 			<table class="min-w-full text-sm text-left text-gray-200">
 				<thead class="bg-gray-800 uppercase text-xs text-gray-400">
 					<tr>
+						<th class="px-4 py-2">
+							<!-- Select All Checkbox -->
+							<input
+								type="checkbox"
+								@change="selectedBookings = $event.target.checked
+									? Array.from(document.querySelectorAll('.row-checkbox')).map(cb => cb.value)
+									: []"
+							/>
+						</th>
 						<th class="px-4 py-2">User ID</th>
 						<th class="px-4 py-2">Customer</th>
 						<th class="px-4 py-2">Camp</th>
 						<th class="px-4 py-2">Guests</th>
-						<th class="px-4 py-2">Status</th>
+						<th class="px-4 py-2">Booking Status</th>
 						<th class="px-4 py-2">Payment Status</th>
 						<th class="px-4 py-2">Payment Method</th>
 						<th class="px-4 py-2">Actions</th>
@@ -77,6 +86,19 @@ templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 					@BookingTableRows(users)
 				</tbody>
 			</table>
+		</div>
+		<!-- Print button only shown when >=1 selected -->
+		<div class="mt-4" x-show="selectedBookings.length > 0" x-transition>
+			<button
+				@click="
+				if (selectedBookings.length > 0) {
+				window.open(`/admin/bookings/print?ids=${selectedBookings.join(',')}`, '_blank')
+				}
+			"
+				class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+			>
+				Print Selected
+			</button>
 		</div>
 		<!-- Add/Edit Guest Form -->
 		<div id="guest-edit-form" class="mt-6"></div>
@@ -104,6 +126,14 @@ templ BookingTableRows(users []types.User) {
 		} else {
 			for _, booking := range user.Bookings {
 				<tr>
+					<td class="px-4 py-2 text-center">
+						<input
+							type="checkbox"
+							class="row-checkbox"
+							value={ fmt.Sprint(booking.ID) }
+							x-model="selectedBookings"
+						/>
+					</td>
 					<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
 					<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
 					<td class="px-4 py-2 text-white">{ booking.Camp.Name }</td>
@@ -455,6 +485,7 @@ templ UserAndPaymentStatusDropdown(userSelected string, paymentSelected string) 
 				<option value="booked" selected={ userSelected == "booked" }>Booked</option>
 				<option value="not booked" selected={ userSelected == "not booked" }>Not Booked</option>
 				<option value="canceled" selected={ userSelected == "canceled" }>Canceled</option>
+				<option value="complete" selected={ userSelected == "completed" }>Completed</option>
 			</select>
 		</div>
 		<div class="flex-1">
