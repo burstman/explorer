@@ -38,12 +38,12 @@ templ Navigation(Role string, isLoggedIn bool) {
 					<button hx-get="/AreaAttraction" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Camp-Sites</button>
 					<button hx-get="/photo+view" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Photo+View</button>
 					<!-- Help -->
-					<div x-data="{ open: false }" class="relative">
-						<button @click="open = !open" class="text-white hover:text-gray-300">Help</button>
-						<div x-show="open" @click.outside="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white text-sm text-gray-800 shadow-lg rounded-md z-50 space-y-1 p-2">
-							<a hx-get="/about" hx-target="#main-content" hx-swap="innerHTML" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">About</a>
-						</div>
-					</div>
+					// <div x-data="{ open: false }" class="relative">
+					// 	<button @click="open = !open" class="text-white hover:text-gray-300">Help</button>
+					// 	<div x-show="open" @click.outside="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white text-sm text-gray-800 shadow-lg rounded-md z-50 space-y-1 p-2">
+					// 		<a hx-get="/about" hx-target="#main-content" hx-swap="innerHTML" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">About</a>
+					// 	</div>
+					// </div>
 				</div>
 				<!-- Desktop login -->
 				<div>

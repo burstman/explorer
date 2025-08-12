@@ -30,8 +30,39 @@ func HandelBooklist(kit *kit.Kit) error {
 		log.Println("failed to fetch users and bookings:", err)
 		return err
 	}
+	statusOptions, err := GetStatusOptions()
 
-	return RenderWithLayout(kit, landing.BookingListAdmin(users))
+	if err != nil {
+		return err
+	}
+
+	return RenderWithLayout(kit, landing.BookingListAdmin(users, statusOptions))
+}
+
+func GetStatusOptions() (types.StatusOptions, error) {
+	var paymentStatuses []string
+	var userStatuses []string
+
+	// Distinct payment_status values
+	err := db.Get().Model(&types.Bookings{}).
+		Distinct("payment_status").
+		Pluck("payment_status", &paymentStatuses).Error
+	if err != nil {
+		return types.StatusOptions{}, fmt.Errorf("err in GetStatusOptions: %v", err)
+	}
+
+	// Distinct user status values
+	err = db.Get().Model(&types.Bookings{}).
+		Distinct("status").
+		Pluck("status", &userStatuses).Error
+	if err != nil {
+		return types.StatusOptions{}, fmt.Errorf("err in GetStatusOptions: %v", err)
+	}
+
+	return types.StatusOptions{
+		PaymentStatuses: paymentStatuses,
+		UserStatuses:    userStatuses,
+	}, nil
 }
 
 func HandelDeleteBookingList(kit *kit.Kit) error {

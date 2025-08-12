@@ -45,3 +45,8 @@ type BookingService struct {
 
 	Service Service `gorm:"foreignKey:ServiceID"`
 }
+
+type StatusOptions struct {
+	PaymentStatuses []string
+	UserStatuses    []string
+}

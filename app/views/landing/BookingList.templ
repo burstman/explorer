@@ -6,22 +6,47 @@ import (
 	"strconv"
 )
 
-templ BookingListAdmin(users []types.User) {
+templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
 	<section class="px-6 py-10 max-w-7xl mx-auto">
 		<!-- Filters -->
-		<form hx-get="/admin/bookings/search" hx-target="#booking-results" class="mb-4 flex flex-wrap gap-3 items-center">
-			<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
-			<input type="text" name="q" placeholder="Search..." class="px-3 py-2 border rounded w-48"/>
-			<select name="payment_status" class="px-3 py-2 border rounded">
+		<form
+			hx-get="/admin/bookings/search"
+			hx-target="#booking-results"
+			hx-swap="innerHTML"
+			class="mb-4 flex flex-wrap gap-3 items-center"
+		>
+			<input
+				type="text"
+				name="q"
+				placeholder="Search..."
+				hx-trigger="keyup changed delay:500ms"
+				class="px-3 py-2 border rounded w-48"
+			/>
+			<select
+				name="payment_status"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
 				<option>All Payment Statuses</option>
-				<option>Pending</option>
-				<option>Paid</option>
+				for _, pstatus:=range statusOption.PaymentStatuses {
+					<option>{ pstatus }</option>
+				}
 			</select>
-			<select name="user_status" class="px-3 py-2 border rounded">
+			<select
+				name="user_status"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
 				<option>All User Statuses</option>
 				<option>Verified</option>
 				<option>Unverified</option>
 			</select>
+			<button
+				type="submit"
+				class="bg-blue-600 text-white px-4 py-2 rounded"
+			>
+				Search
+			</button>
 		</form>
 		<!-- Booking Table -->
 		<div class="overflow-x-auto">
@@ -38,7 +63,9 @@ templ BookingListAdmin(users []types.User) {
 						<th class="px-4 py-2">Actions</th>
 					</tr>
 				</thead>
-				@BookingTableRows(users)
+				<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
+					@BookingTableRows(users)
+				</tbody>
 			</table>
 		</div>
 		<!-- Add/Edit Guest Form -->
@@ -48,67 +75,65 @@ templ BookingListAdmin(users []types.User) {
 
 // In landing/booking_rows.templ
 templ BookingTableRows(users []types.User) {
-	<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
-		for _, user := range users {
-			if len(user.Bookings) == 0 {
+	for _, user := range users {
+		if len(user.Bookings) == 0 {
+			<tr>
+				<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
+				<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
+				<td class="px-4 py-2 italic text-gray-400" colspan="5">No bookings</td>
+				<td class="px-4 py-2 text-right">
+					<button
+						@click="modalOpen = true"
+						hx-get={ "/admin/bookings/" + fmt.Sprint(user.ID) + "/new" }
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="text-green-400 hover:text-green-200"
+					>➕ Add Booking</button>
+				</td>
+			</tr>
+		} else {
+			for _, booking := range user.Bookings {
 				<tr>
 					<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
 					<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
-					<td class="px-4 py-2 italic text-gray-400" colspan="5">No bookings</td>
-					<td class="px-4 py-2 text-right">
+					<td class="px-4 py-2 text-white">{ booking.Camp.Name }</td>
+					<td class="px-4 py-2 text-white">{ len(booking.Guests) }</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
+					</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+					</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
+					</td>
+					<td class="px-4 py-2 space-x-2 text-white">
 						<button
 							@click="modalOpen = true"
-							hx-get={ "/admin/bookings/" + fmt.Sprint(user.ID) + "/new" }
+							hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/showDetail" }
 							hx-target="#modal-content"
 							hx-swap="innerHTML"
-							class="text-green-400 hover:text-green-200"
-						>➕ Add Booking</button>
+							class="hover:text-green-400"
+						>👁</button>
+						<button
+							@click="modalOpen = true"
+							hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
+							hx-target="#modal-content"
+							hx-swap="innerHTML"
+							class="hover:text-yellow-400"
+						>✏️</button>
+						<button
+							hx-delete={ "/admin/bookings/list/" + fmt.Sprint(booking.ID) }
+							hx-confirm="Are you sure?"
+							hx-target="#booking-results"
+							hx-swap="outerHTML"
+							class="hover:text-red-400"
+						>🗑️</button>
 					</td>
 				</tr>
-			} else {
-				for _, booking := range user.Bookings {
-					<tr>
-						<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
-						<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
-						<td class="px-4 py-2 text-white">{ booking.Camp.Name }</td>
-						<td class="px-4 py-2 text-white">{ len(booking.Guests) }</td>
-						<td class="px-4 py-2">
-							<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
-						</td>
-						<td class="px-4 py-2">
-							<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
-						</td>
-						<td class="px-4 py-2">
-							<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
-						</td>
-						<td class="px-4 py-2 space-x-2 text-white">
-							<button
-								@click="modalOpen = true"
-								hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/showDetail" }
-								hx-target="#modal-content"
-								hx-swap="innerHTML"
-								class="hover:text-green-400"
-							>👁</button>
-							<button
-								@click="modalOpen = true"
-								hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
-								hx-target="#modal-content"
-								hx-swap="innerHTML"
-								class="hover:text-yellow-400"
-							>✏️</button>
-							<button
-								hx-delete={ "/admin/bookings/list/" + fmt.Sprint(booking.ID) }
-								hx-confirm="Are you sure?"
-								hx-target="#booking-results"
-								hx-swap="outerHTML"
-								class="hover:text-red-400"
-							>🗑️</button>
-						</td>
-					</tr>
-				}
 			}
 		}
-	</tbody>
+	}
 }
 
 templ BookingDetailModal(booking types.Bookings) {
