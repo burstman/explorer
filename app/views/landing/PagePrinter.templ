@@ -36,60 +36,41 @@ templ PagePrintBookingSelectedUser(users []types.User) {
 			</style>
 		</head>
 		<body>
-			<h1>Selected Bookings</h1>
-			for _, user := range users {
-				if len(user.Bookings) == 0 {
-					<h2>User: { user.FirstName } { user.LastName } (ID: { user.ID })</h2>
-					<p>No bookings for this user.</p>
-				} else {
-					<table>
-						<thead>
-							<tr>
-								<th>Camp</th>
-								<th>First Name</th>
-								<th>Last Name</th>
-								//<th>Booking Status</th>
-								//<th>Payment Status</th>
-								//<th>Payment Method</th>
-								<th>CIN</th>
-								<th>Phone</th>
-							</tr>
-						</thead>
+			<h1>Camping List</h1>
+			<table>
+				<thead>
+					<tr>
+						<th>First Name</th>
+						<th>Last Name</th>
+						<th>CIN</th>
+					</tr>
+				</thead>
+				for _, user := range users {
+					if len(user.Bookings) == 0 {
+						<h2>User: { user.FirstName } { user.LastName } (ID: { user.ID })</h2>
+						<p>No bookings for this user.</p>
+					} else {
 						<tbody>
 							for _, booking := range user.Bookings {
 								<tr>
 									<!-- User row -->
-									<td>{ booking.Camp.Name }</td>
 									<td><strong>{ user.FirstName }</strong></td>
 									<td><strong>{ user.LastName }</strong></td>
-									//<td>{ booking.Status }</td>
-									//<td>{ booking.PaymentStatus }</td>
-									//<td>{ booking.PaymentMethod }</td>
 									<td>{ booking.User.Cin }</td>
-									<td></td> <!-- No Phone for user -->
 								</tr>
-								if len(booking.Guests) == 0 {
-									<tr>
-										<td colspan="7" style="text-align:center;">No guests</td>
-									</tr>
-								} else {
+								if len(booking.Guests) > 0 {
 									for _, guest := range booking.Guests {
-										<tr>
-											<!-- Guest row -->
-											<td>{ guest.FirstName }</td>
-											<td>{ guest.LastName }</td>
-											<td></td>
-											<td></td>
-											<td></td>
-											<td>{ guest.CIN }</td>
-										</tr>
+										<!-- Guest row -->
+										<td>{ guest.FirstName }</td>
+										<td>{ guest.LastName }</td>
+										<td>{ guest.CIN }</td>
 									}
 								}
 							}
 						</tbody>
-					</table>
+					}
 				}
-			}
+			</table>
 			<button id="no-print" onclick="window.print()">Print this page</button>
 		</body>
 	</html>

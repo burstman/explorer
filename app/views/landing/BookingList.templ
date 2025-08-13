@@ -130,7 +130,7 @@ templ BookingTableRows(users []types.User) {
 						<input
 							type="checkbox"
 							class="row-checkbox"
-							value={ fmt.Sprint(booking.ID) }
+							value={ fmt.Sprint(booking.UserID) }
 							x-model="selectedBookings"
 						/>
 					</td>
