@@ -52,18 +52,20 @@ templ PagePrintBookingSelectedUser(users []types.User) {
 					} else {
 						<tbody>
 							for _, booking := range user.Bookings {
+								<!-- Row for the user -->
 								<tr>
-									<!-- User row -->
 									<td><strong>{ user.FirstName }</strong></td>
 									<td><strong>{ user.LastName }</strong></td>
 									<td>{ booking.User.Cin }</td>
 								</tr>
+								<!-- Rows for each guest -->
 								if len(booking.Guests) > 0 {
 									for _, guest := range booking.Guests {
-										<!-- Guest row -->
-										<td>{ guest.FirstName }</td>
-										<td>{ guest.LastName }</td>
-										<td>{ guest.CIN }</td>
+										<tr>
+											<td>{ guest.FirstName }</td>
+											<td>{ guest.LastName }</td>
+											<td>{ guest.CIN }</td>
+										</tr>
 									}
 								}
 							}
