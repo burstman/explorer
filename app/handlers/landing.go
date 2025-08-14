@@ -4,6 +4,8 @@ import (
 	"explorer/app/db"
 	"explorer/app/types"
 	"explorer/app/views/landing"
+	"fmt"
+	"strconv"
 
 	"log"
 
@@ -162,4 +164,32 @@ func HandleBookNew(kit *kit.Kit) error {
 	}
 
 	return RenderWithLayout(kit, landing.NewBooking(camp, user, services))
+}
+
+func CampDescription(kit *kit.Kit) error {
+	idStr := chi.URLParam(kit.Request, "campID")
+
+	id, err := strconv.Atoi(idStr)
+	//log.Println("camp id description:", id)
+	if err != nil {
+		return fmt.Errorf("error parsing camp id in CampDescriptionHandler: %v", err)
+	}
+
+	camp, err := GetCampByID(id)
+	//log.Println("camp:", camp.Description)
+
+	if err != nil {
+		return fmt.Errorf("err retrieving data in CampDescriptionHandler %v", err)
+	}
+	return RenderWithLayout(kit, landing.Description(camp))
+
+}
+
+func GetCampByID(id int) (types.CampSite, error) {
+	var camp types.CampSite
+	err := db.Get().Where("id = ?", id).Find(&camp).Error
+	if err != nil {
+		return types.CampSite{}, err
+	}
+	return camp, nil
 }
