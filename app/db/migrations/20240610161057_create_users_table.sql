@@ -9,6 +9,7 @@ create table if not exists users(
 	phone_number VARCHAR(15),
 	social_Link VARCHAR(64),
 	CIN VARCHAR(8),
+	last_verification_sent_at TIMESTAMP NULL,
 	email_verified_at timestamp,
 	created_at timestamp not null,
 	updated_at timestamp not null,

@@ -66,17 +66,18 @@ func (user AuthUser) HasBooked(camp CampSite) bool {
 type User struct {
 	gorm.Model
 
-	Email           string
-	FirstName       string
-	LastName        string
-	PasswordHash    string
-	PhoneNumber     string
-	SocialLink      string
-	Cin             string
-	EmailVerifiedAt sql.NullTime
-	Role            string `gorm:"not null;default:user"`
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	Email                  string
+	FirstName              string
+	LastName               string
+	PasswordHash           string
+	PhoneNumber            string
+	SocialLink             string
+	Cin                    string
+	EmailVerifiedAt        sql.NullTime
+	Role                   string `gorm:"not null;default:user"`
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
+	LastVerificationSentAt time.Time `gorm:"column:last_verification_sent_at"`
 
 	Bookings []Bookings `gorm:"foreignKey:UserID"`
 }

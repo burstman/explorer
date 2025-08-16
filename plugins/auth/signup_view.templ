@@ -145,11 +145,59 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 }
 
 templ ConfirmEmail(user types.User) {
-	<form hx-post="/resend-email-verification" class="flex flex-col gap-4 text-sm">
-		<input type="hidden" name="userID" value={ fmt.Sprint(user.ID) }/>
-		<div>An email confirmation link has been sent to: <span class="underline font-medium">{ user.Email }</span></div>
-		<div>Trouble receiving the verification code? <button class="underline font-medium cursor-pointer">Resend verification code</button></div>
-	</form>
+	<div x-data="resendTimer()" x-init="init()">
+		<form hx-post="/resend-email-verification" class="flex flex-col gap-4 text-sm">
+			<input type="hidden" name="userID" value={ fmt.Sprint(user.ID) }/>
+			<div>
+				An email confirmation link has been sent to: 
+				<span class="underline font-medium">{ user.Email }</span>
+			</div>
+			<!-- Resend button with countdown -->
+			<div class="flex items-center gap-2">
+				<button
+					class="underline font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					:disabled="remaining > 0"
+				>
+					Resend verification code
+				</button>
+				<!-- Show timer if still counting down -->
+				<span x-show="remaining > 0" class="text-gray-600 text-xs">
+					Retry in <span x-text="time().minutes"></span>:<span x-text="time().seconds"></span>
+				</span>
+			</div>
+		</form>
+	</div>
+	<script>
+	function resendTimer() {
+		return {
+			expiry: new Date().getTime() + 60000, // 60s cooldown
+			remaining: null,
+			init() {
+				this.setRemaining()
+				setInterval(() => this.setRemaining(), 1000)
+			},
+			setRemaining() {
+				const diff = this.expiry - new Date().getTime()
+				this.remaining = diff > 0 ? parseInt(diff / 1000) : 0
+			},
+			minutes() {
+				return parseInt(this.remaining / 60)
+			},
+			seconds() {
+				return this.remaining % 60
+			},
+			format(value) {
+				return ("0" + value).slice(-2)
+			},
+			time() {
+				return {
+					minutes: this.format(this.minutes()),
+					seconds: this.format(this.seconds())
+				}
+			}
+		}
+	}
+</script>
 }
 
 templ terms() {

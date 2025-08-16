@@ -99,9 +99,9 @@ func HandleResendVerificationCode(kit *kit.Kit) error {
 		Token: token,
 	})
 
-	msg := fmt.Sprintf("A new verification token has been sent to %s", user.Email)
+	//msg := fmt.Sprintf("A new verification token has been sent to %s", user.Email)
 
-	return kit.Text(http.StatusOK, msg)
+	return kit.Render(ConfirmEmail(user))
 }
 
 // createVerificationToken generates a JWT token for email verification with a configurable expiry time.
