@@ -77,8 +77,9 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Get("/admin/bookings/{id}/edit", kit.Handler(handlers.EditBooking))
 		app.Get("/admin/bookings/{id}/showDetail", kit.Handler(handlers.BookingShowDetail))
 		app.Get("/admin/bookings/{user_id}/new", kit.Handler(handlers.BookingAdmin))
-		app.Get("/admin/bookings/search", kit.Handler(handlers.HandleBookingSearch))
-		app.Get("/admin/bookings/print", kit.Handler(handlers.HandlePrintBookings))
+		app.Get("/admin/bookings/search", kit.Handler(handlers.BookingSearch))
+		app.Get("/admin/bookings/print", kit.Handler(handlers.PrintBookings))
+		app.Get("/admin/carousel", kit.Handler(handlers.Carousel))
 
 		app.Post("/admin/buses/create", kit.Handler(buses.HandleCreate))
 		app.Post("/admin/campsites/create", kit.Handler(campsite.HandleCampsiteCreate))

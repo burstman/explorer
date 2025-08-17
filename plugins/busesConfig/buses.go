@@ -37,10 +37,6 @@ func HandleCreate(kit *kit.Kit) error {
 
 	capacityStr := kit.Request.FormValue("capacity")
 
-	if name == "" {
-		return fmt.Errorf("bus name is required")
-	}
-
 	capacity, err := strconv.Atoi(capacityStr)
 	if err != nil {
 		return err
@@ -64,7 +60,7 @@ func HandleCreate(kit *kit.Kit) error {
 }
 
 func HandleDelete(kit *kit.Kit) error {
-	log.Println("Request path:", kit.Request.URL.Path)
+	//log.Println("Request path:", kit.Request.URL.Path)
 
 	idStr := chi.URLParam(kit.Request, "id")
 	id, err := strconv.Atoi(idStr)

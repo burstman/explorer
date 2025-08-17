@@ -118,6 +118,15 @@ templ login(isLoggedIn bool, Role string) {
 						hx-swap="innerHTML"
 						class=" block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
 					>Configure Services</a>
+					<a
+						@click="modalOpen = true"
+						hx-get="/admin/carousel"
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class=" block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white cursor-pointer"
+					>
+						Configure Carousel Landing Page
+					</a>
 				}
 				<a
 					href="/logout"

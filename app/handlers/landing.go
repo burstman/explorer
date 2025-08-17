@@ -30,6 +30,11 @@ func HandleLandingIndex(kit *kit.Kit) error {
 		failMessages[i] = flash.(string)
 	}
 
+	var caroucelImages []types.CarouselImage
+	if err := db.Get().Find(&caroucelImages).Error; err != nil {
+		return err
+	}
+
 	return RenderWithLayout(kit, landing.Index(successMessages, failMessages))
 }
 

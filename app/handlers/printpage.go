@@ -12,7 +12,7 @@ import (
 	"github.com/anthdm/superkit/kit"
 )
 
-func HandlePrintBookings(kit *kit.Kit) error {
+func PrintBookings(kit *kit.Kit) error {
 	if err := kit.Request.ParseForm(); err != nil {
 		return fmt.Errorf("parsing error in HandlePrintBookings: %v", err)
 	}

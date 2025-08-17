@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func HandleBookingSearch(kit *kit.Kit) error {
+func BookingSearch(kit *kit.Kit) error {
 	if err := kit.Request.ParseForm(); err != nil {
 		return err
 	}
