@@ -3,7 +3,6 @@
 CREATE TABLE carousel_images (
     id SERIAL PRIMARY KEY,
     url TEXT NOT NULL,
-    position INT DEFAULT 0,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     deleted_at TIMESTAMP NULL

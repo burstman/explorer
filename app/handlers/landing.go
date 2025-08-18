@@ -35,7 +35,7 @@ func HandleLandingIndex(kit *kit.Kit) error {
 		return err
 	}
 
-	return RenderWithLayout(kit, landing.Index(successMessages, failMessages))
+	return RenderWithLayout(kit, landing.Index(successMessages, failMessages, caroucelImages))
 }
 
 func HandleLandingAbout(kit *kit.Kit) error {

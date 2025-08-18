@@ -14,11 +14,11 @@ templ CarouselConfigModal(images []types.CarouselImage) {
 	<ul class="space-y-2 mb-6">
 		for _, img := range images {
 			<li class="border p-3 rounded text-sm text-gray-800 flex justify-between items-center">
-				<span class="flex-1">
-					<strong>Position { img.Position }</strong> - <a href={ img.URL } target="_blank" class="underline text-blue-600">{ img.URL }</a>
-				</span>
+				<p>
+					{ img.URL }
+				</p>
 				<form
-					hx-post={ "/admin/carousel/" + strconv.Itoa(int(img.ID)) + "/delete" }
+					hx-delete={ "/admin/carousel/" + strconv.Itoa(int(img.ID)) + "/delete" }
 					hx-target="#modal-content"
 					hx-swap="innerHTML"
 					onsubmit="return confirm('Are you sure you want to delete this image?')"
@@ -44,14 +44,6 @@ templ CarouselConfigModal(images []types.CarouselImage) {
 			name="url"
 			required
 			placeholder="Image URL"
-			class="w-full border rounded p-2 text-sm"
-		/>
-		<input
-			type="number"
-			name="position"
-			required
-			min="0"
-			placeholder="Position"
 			class="w-full border rounded p-2 text-sm"
 		/>
 		<button type="submit" class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-700">

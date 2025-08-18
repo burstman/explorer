@@ -1,6 +1,12 @@
 package landing
 
-templ Index(successFlashes, failFlashes []string) {
+import (
+	"explorer/app/types"
+	"fmt"
+	"strings"
+)
+
+templ Index(successFlashes, failFlashes []string, carouselImages []types.CarouselImage) {
 	<div>
 		<section class="relative h-screen">
 			<!-- Background -->
@@ -16,12 +22,15 @@ templ Index(successFlashes, failFlashes []string) {
 					<p class="text-white/80 text-lg md:text-xl mb-8 max-w-xl mx-auto">
 						Discover breathtaking camping spots across the country. Connect with nature and create unforgettable memories.
 					</p>
+					{{ imagesURLs := []string{} }}
+					{{
+						for _, img := range carouselImages {
+							imagesURLs = append(imagesURLs, fmt.Sprintf("'%s'", img.URL))
+						}
+					}}
+					{{ xData := fmt.Sprintf("carousel([%s])", strings.Join(imagesURLs, ", ")) }}
 					<div
-						x-data="carousel([
-								'https://example.com/img1.jpg',
-								'https://example.com/img2.jpg',
-								'https://example.com/img3.jpg'
-							])"
+						x-data={ xData }
 						x-init="start()"
 						class="relative mx-auto w-full h-96 overflow-hidden rounded-xl shadow-lg"
 					>

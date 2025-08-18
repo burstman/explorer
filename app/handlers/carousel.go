@@ -4,6 +4,7 @@ import (
 	"explorer/app/db"
 	"explorer/app/types"
 	"explorer/plugins/carousel"
+
 	"fmt"
 	"log"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 
 func Carousel(kit *kit.Kit) error {
 	var images []types.CarouselImage
-	if err := db.Get().Order("position asc").Find(&images).Error; err != nil {
+	if err := db.Get().Order("created_at asc").Find(&images).Error; err != nil {
 		return fmt.Errorf("error getting data carousel: %v", err)
 	}
 
@@ -30,19 +31,7 @@ func CarouselImageCreate(kit *kit.Kit) error {
 
 	url := kit.Request.FormValue("url")
 
-	positionStr := kit.Request.FormValue("position")
-
-	position, err := strconv.Atoi(positionStr)
-	if err != nil {
-		return fmt.Errorf("erro parsing position in CarouselCreate")
-	}
-
-	if position <= 0 {
-		return fmt.Errorf("position must be greater than zero")
-	}
-
-	caroucel := types.CarouselImage{URL: url,
-		Position: position}
+	caroucel := types.CarouselImage{URL: url}
 
 	if err := db.Get().Create(&caroucel).Error; err != nil {
 		return err
