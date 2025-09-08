@@ -13,11 +13,17 @@ import (
 const (
 	UserSignupEvent         = "auth.signup"
 	ResendVerificationEvent = "auth.resend.verification"
+	PasswordResetEvent      = "auth.password.reset"
 )
 
 // UserWithVerificationToken is a struct that will be sent over the
 // auth.signup event. It holds the User struct and the Verification token string.
 type UserWithVerificationToken struct {
+	User  types.User
+	Token string
+}
+
+type UserWithResetToken struct {
 	User  types.User
 	Token string
 }

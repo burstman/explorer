@@ -34,6 +34,12 @@ func HandleLandingIndex(kit *kit.Kit) error {
 	if err := db.Get().Find(&caroucelImages).Error; err != nil {
 		return err
 	}
+	// imagesURLs := []string{}
+	// for _, img := range caroucelImages {
+	// 	imagesURLs = append(imagesURLs, fmt.Sprintf("'%s'", img.URL))
+	// }
+	// xData := fmt.Sprintf("carousel([%s])", strings.Join(imagesURLs, ", "))
+	// log.Println("Carousel Images:", xData)
 
 	return RenderWithLayout(kit, landing.Index(successMessages, failMessages, caroucelImages))
 }
@@ -121,9 +127,9 @@ func HandleCampSites(kit *kit.Kit) error {
 		totalSeatsMap[row.CampsiteID] = row.TotalSeats
 	}
 
-	for _, s := range seatData {
-		log.Printf("Seats for Camp ID %d: %d", s.CampsiteID, s.TotalSeats)
-	}
+	// for _, s := range seatData {
+	// 	log.Printf("Seats for Camp ID %d: %d", s.CampsiteID, s.TotalSeats)
+	// }
 
 	for _, b := range bookings {
 		bookedSeatsMap[b.CampID] = b.BookedSeats
@@ -138,8 +144,6 @@ func HandleCampSites(kit *kit.Kit) error {
 		}
 		remainingSeatsMap[campID] = remaining
 	}
-	log.Printf("Booking data with guests: %+v", bookings)
-	log.Printf("Remaining seats per camp: %+v", remainingSeatsMap)
 
 	return RenderWithLayout(kit, landing.CampSites(user, camps, buses, remainingSeatsMap, flashType, flashMsg))
 }

@@ -46,7 +46,6 @@ func CarouselImageCreate(kit *kit.Kit) error {
 }
 
 func CaroucelImageDelete(kit *kit.Kit) error {
-	//log.Println("Request path:", kit.Request.URL.Path)
 
 	idStr := chi.URLParam(kit.Request, "id")
 	id, err := strconv.Atoi(idStr)

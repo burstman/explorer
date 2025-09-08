@@ -158,8 +158,6 @@ func BookingShowDetail(kit *kit.Kit) error {
 		return err
 	}
 
-	//log.Println("booking detail:", booking)
-
 	return kit.Render(landing.BookingDetailModal(booking))
 }
 
@@ -300,7 +298,6 @@ func EditPostBooking(kit *kit.Kit) error {
 
 	// Guests
 	guestsCount, _ := strconv.Atoi(kit.Request.FormValue("guestsCount"))
-	log.Println("guestcount:", guestsCount)
 
 	newGuests := make([]types.Guest, 0, guestsCount)
 	for i := 0; i < guestsCount; i++ {
@@ -314,7 +311,6 @@ func EditPostBooking(kit *kit.Kit) error {
 			BookingID: uint(bookingID),
 		})
 	}
-	log.Println("newguests", newGuests)
 
 	// Delete old guests and insert new ones
 	if err := db.Get().Where("booking_id = ?", bookingID).Delete(&types.Guest{}).Error; err != nil {

@@ -34,7 +34,7 @@ templ CampSites(user types.AuthUser, camps []types.CampSite, buses []types.BuseT
 		</div>
 		<!-- Content -->
 		<div class="relative z-10 flex flex-col items-center justify-center px-6 pt-20">
-			<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Campsites</h1>
+			<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Site de Camping</h1>
 			<!-- Add Button -->
 			if user.Role == "admin" || user.Role == "superuser" {
 				<button
@@ -83,7 +83,7 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 			<h2 class="text-xl font-bold text-green-900">{ camp.Name }</h2>
 			<p class="text-xs text-gray-500 mt-2">{ camp.Location }</p>
 			<p class="text-sm text-gray-600">
-				Available Seats: { templ.EscapeString(func() string {
+				Nombre de siége dispo: { templ.EscapeString(func() string {
 				if seatMap[camp.ID] > 0 {
 					return strconv.Itoa(seatMap[camp.ID])
 				}
@@ -91,7 +91,7 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 			}()) }
 			</p>
 			<p class="text-xs text-gray-500 mt-2">
-				Available from: { templ.EscapeString(func() string {
+				Available Disponible à partir de: { templ.EscapeString(func() string {
 				if camp.AvailableFrom != nil {
 					return camp.AvailableFrom.Format("January 2, 2006")
 				}
@@ -99,7 +99,7 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 			}()) }
 			</p>
 			<p class="text-xs text-gray-500 mt-2">
-				Available to: { templ.EscapeString(func() string {
+				Disponible jusqu'à: { templ.EscapeString(func() string {
 				if camp.AvailableTo != nil {
 					return camp.AvailableTo.Format("January 2, 2006")
 				}
@@ -151,7 +151,7 @@ templ campCard(camp types.CampSite, user types.AuthUser, seatMap map[int]int) {
 								type="submit"
 								class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
 							>
-								🎟️ Book Now
+								🎟️ Réserver Maintenant
 							</button>
 						</form>
 					}

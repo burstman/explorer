@@ -141,22 +141,22 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<!-- User Profile Info -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
-				<label class="text-sm text-gray-700">First Name</label>
+				<label class="text-sm text-gray-700">Prénom</label>
 				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.FirstName }/>
 			</div>
 			<div>
-				<label class="text-sm text-gray-700">Last Name</label>
+				<label class="text-sm text-gray-700">Nom</label>
 				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.LastName }/>
 			</div>
 		</div>
 		<!-- Camping Date Range -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
-				<label class="text-sm text-gray-700">Start Date</label>
+				<label class="text-sm text-gray-700">Date de Debut</label>
 				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableFrom.Format("2006-01-02") }/>
 			</div>
 			<div>
-				<label class="text-sm text-gray-700">End Date</label>
+				<label class="text-sm text-gray-700">Date de Fin</label>
 				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableTo.Format("2006-01-02") }/>
 			</div>
 		</div>
@@ -166,13 +166,13 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		@AdditionalServices(Allservice)
 		<!-- Special Requests -->
 		<div>
-			<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+			<label for="specialRequest" class="block text-sm font-medium text-gray-700">Requetes Speciale</label>
 			<textarea name="specialRequest" id="specialRequest" rows="3" placeholder="Any special requests?" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
 		</div>
 		<!-- Submit Button -->
 		<div>
 			<button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md">
-				📅 Confirm Booking
+				📅 Confirmez votre réservation
 			</button>
 		</div>
 	</form>
@@ -181,7 +181,7 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 templ GuestFormFields() {
 	<!-- Number of Guests -->
 	<label for="guestsCount" class="block text-sm font-medium text-gray-700">
-		Number of Guests
+		Number d'inviter
 	</label>
 	<select
 		id="guestsCount"
@@ -194,14 +194,13 @@ templ GuestFormFields() {
 		for i := 1; i <= 10; i++ {
 			<option value={ fmt.Sprint(i) }>{ fmt.Sprint(i) }</option>
 		}
-		<option value="10+">10+</option>
 	</select>
 	<!-- Guest Details -->
 	<div class="mt-6 space-y-4">
 		<template x-for="(guest, index) in guests" :key="index">
 			<div class="p-4 border rounded-lg bg-gray-50 space-y-2">
 				<h4 class="font-semibold text-sm text-gray-700">
-					Guest <span x-text="index + 1"></span>
+					Invité <span x-text="index + 1"></span>
 				</h4>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 					<input
@@ -235,7 +234,7 @@ templ GuestFormFields() {
 
 templ AdditionalServices(services []types.Service) {
 	<div>
-		<h3 class="text-sm font-semibold text-gray-800 mb-2">Additional Services</h3>
+		<h3 class="text-sm font-semibold text-gray-800 mb-2">Services Additionelles</h3>
 		<div class="space-y-3 text-sm text-gray-700">
 			for _, s := range services {
 				<input type="hidden" name={ fmt.Sprintf("service[%d]", s.ID) } :value={ fmt.Sprintf("services[%d]", s.ID) }/>
@@ -243,7 +242,7 @@ templ AdditionalServices(services []types.Service) {
 					<!-- Service name and price -->
 					<div class="flex-1">
 						<div class="font-medium text-gray-800">{ s.Name }</div>
-						<div class="text-xs text-gray-500">TND { fmt.Sprintf("%.2f", s.Price) } each</div>
+						<div class="text-xs text-gray-500">TND { fmt.Sprintf("%.2f", s.Price) } TND</div>
 					</div>
 					<!-- Quantity controls -->
 					<div class="flex items-center gap-2">
@@ -283,22 +282,24 @@ templ PaymentMethod() {
 			>
 				&times;
 			</button>
-			<h2 class="text-xl font-bold text-gray-800 mb-4">Choose Payment Method</h2>
-			<p class="text-sm text-gray-600 mb-6">Please select how you'd like to pay for your booking:</p>
+			<h2 class="text-xl font-bold text-gray-800 mb-4">Choisir votre Methode de Payment </h2>
+			<p class="text-sm text-gray-600 mb-6">
+				Veuillez sélectionner comment vous souhaitez payer votre réservation:
+			</p>
 			<!-- ✅ Pay with Cash: Triggers form submit -->
 			<button
 				type="button"
 				@click="paymentMethod = 'cash';showPaymentModal = false; showConfirmModal = true"
 				class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded mb-4"
 			>
-				💵 Pay with Cash (on site)
+				💵 Payer en espèces (sur place)
 			</button>
 			<!-- 💳 Online Disabled -->
 			<button
 				disabled
 				class="w-full bg-gray-300 text-gray-600 py-2 px-4 rounded cursor-not-allowed"
 			>
-				💳 Pay Online (Coming Soon)
+				💳 Payer en ligne (à venir)
 			</button>
 		</div>
 	</div>
@@ -321,8 +322,10 @@ templ ConfirmationCachPayement() {
 			style="backdrop-filter: blur(3px);"
 		>
 			<div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full space-y-4">
-				<h2 class="text-xl font-bold text-center text-gray-800">Confirm Your Booking</h2>
-				<p class="text-gray-600 text-sm text-center">Are you sure you want to book with cash payment? An admin will need to confirm it.</p>
+				<h2 class="text-xl font-bold text-center text-gray-800">Confirmer Votre Réservation</h2>
+				<p class="text-gray-600 text-sm text-center">
+					Voulez-vous vraiment réserver en espèces ? Un administrateur devra confirmer votre réservation.
+				</p>
 				<div class="flex justify-center gap-4 mt-4">
 					<!-- Cancel -->
 					<button

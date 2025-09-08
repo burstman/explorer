@@ -5,8 +5,17 @@ templ Navigation(Role string, isLoggedIn bool) {
 		<!-- Top nav container -->
 		<div class="container mx-auto flex items-center justify-between px-4 py-3 lg:py-4">
 			<!-- Brand -->
-			<a href="/" class="text-white text-xl font-bold tracking-wide">
-				Explorer <span class="text-sm font-light">v0.1</span>
+			<a href="/" class="flex items-center text-white text-xl font-bold tracking-wide space-x-2">
+				<!-- Logo -->
+				<img
+					src="https://i.imgur.com/5hVGyrb.jpeg"
+					alt="Explorers Logo"
+					class="h-8 w-8 object-contain"
+				/>
+				<!-- Text -->
+				<span>
+					Explorers <span class="text-sm font-light">v0.1</span>
+				</span>
 			</a>
 			<!-- Mobile toggle -->
 			<div class="lg:hidden">
@@ -23,19 +32,19 @@ templ Navigation(Role string, isLoggedIn bool) {
 					<button hx-get="/" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Home</button>
 					<!-- Book -->
 					<div x-data="{ open: false }" class="relative">
-						<button @click="open = !open" class="text-white hover:text-gray-300">Book</button>
+						<button @click="open = !open" class="text-white hover:text-gray-300">Réservation</button>
 						<div x-show="open" @click.outside="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white text-sm text-gray-800 shadow-lg rounded-md z-50 space-y-1 p-2">
 							if isLoggedIn {
 								if Role == "admin" {
 									<a href="/admin/booking/list" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">Book List</a>
 								}
 								if Role == "user" {
-									<a href="/user/bookings/status" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">Booking Status</a>
+									<a href="/user/bookings/status" class="block px-2 py-2 hover:bg-green-800 hover:text-white rounded-md">Status de réservation</a>
 								}
 							}
 						</div>
 					</div>
-					<button hx-get="/AreaAttraction" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Camp-Sites</button>
+					<button hx-get="/AreaAttraction" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Sites de Campements</button>
 					<button hx-get="/photo+view" hx-target="#main-content" hx-swap="innerHTML" class="text-white hover:text-gray-300">Photo+View</button>
 					<!-- Help -->
 					// <div x-data="{ open: false }" class="relative">
@@ -55,14 +64,14 @@ templ Navigation(Role string, isLoggedIn bool) {
 		<div x-show="open" class="lg:hidden px-4 pb-4 space-y-2">
 			<button hx-get="/" hx-target="#main-content" hx-swap="innerHTML" class="block w-full text-left text-white py-2 hover:text-gray-300">Home</button>
 			<div x-data="{ open: false }">
-				<button @click="open = !open" class="block w-full text-left text-white py-2 hover:text-gray-300">Book</button>
+				<button @click="open = !open" class="block w-full text-left text-white py-2 hover:text-gray-300">Réservation</button>
 				<div x-show="open" class="mt-1 ml-2 pl-2 border-l border-green-700 space-y-1">
 					if isLoggedIn {
 						if Role == "admin" {
-							<a href="/admin/booking/list" class="block text-white py-1 hover:text-gray-300">Book List</a>
+							<a href="/admin/booking/list" class="block text-white py-1 hover:text-gray-300">List de récervation</a>
 						}
 						if Role == "user" {
-							<a href="/user/bookings/status" class="block text-white py-1 hover:text-gray-300">Booking Status</a>
+							<a href="/user/bookings/status" class="block text-white py-1 hover:text-gray-300">Status de réservation</a>
 						}
 					}
 				</div>
@@ -93,7 +102,7 @@ templ login(isLoggedIn bool, Role string) {
 				if Role == "admin" {
 					Admin-User
 				} else {
-					User
+					Campeur
 				}
 			</button>
 			<div
@@ -132,7 +141,7 @@ templ login(isLoggedIn bool, Role string) {
 					href="/logout"
 					hx-delete="/logout"
 					class="block px-2 py-2 rounded-md text-gray-800 hover:bg-green-800 hover:text-white"
-				>Logout</a>
+				>Deconnecter</a>
 			</div>
 		</div>
 	} else {

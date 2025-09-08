@@ -4,13 +4,11 @@ import (
 	"explorer/app"
 	"explorer/public"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -58,8 +56,8 @@ func disableCache(next http.Handler) http.Handler {
 	})
 }
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
-}
+// func init() {
+// 	if err := godotenv.Load(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }

@@ -2,28 +2,31 @@ package auth
 
 import (
 	"explorer/app/db"
+	"explorer/app/handlers"
 	"explorer/app/types"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/anthdm/superkit/event"
 	"github.com/anthdm/superkit/kit"
 	v "github.com/anthdm/superkit/validate"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+)
+
+var passwordRules = v.Rules(
+	v.ContainsUpper,
+	v.Min(7),
+	v.Max(50),
 )
 
 var signupSchema = v.Schema{
-	"email": v.Rules(v.Email),
-	"password": v.Rules(
-		v.ContainsSpecial,
-		v.ContainsUpper,
-		v.Min(7),
-		v.Max(50),
-	),
+	"email":              v.Rules(v.Email),
+	"password":           passwordRules,
 	"firstName":          v.Rules(v.Min(2), v.Max(50)),
 	"lastName":           v.Rules(v.Min(2), v.Max(50)),
 	"phoneNumber":        v.Rules(v.Min(8), v.Max(15)),
@@ -50,7 +53,7 @@ func HandleSignupCreate(kit *kit.Kit) error {
 	}
 
 	if values.SocialLink != "" && !isValidSocialLink(values.SocialLink) {
-		log.Println(values.SocialLink)
+
 		errors.Add("socialLink", "invalid social link")
 		return kit.Render(SignupForm(values, errors))
 	}
@@ -123,4 +126,98 @@ func createVerificationToken(userID uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(os.Getenv("SUPERKIT_SECRET")))
+}
+
+func HandelForgotPasswordPage(kit *kit.Kit) error {
+	return kit.Render(ForgotPasswordPage(nil, nil))
+
+}
+
+func HandelResetPassEmailSend(kit *kit.Kit) error {
+	email := kit.Request.FormValue("email")
+
+	// check if user exists
+
+	var user types.User
+	if err := db.Get().Where("email = ?", email).First(&user).Error; err != nil {
+		return kit.Text(http.StatusOK, `<div class="p-6 text-center">A reset link has been sent.</div>`)
+	}
+
+	// generate reset token
+	token, err := createVerificationToken(user.ID)
+	if err != nil {
+		return kit.Text(http.StatusInternalServerError, "An unexpected error occurred while creating reset token")
+
+	}
+
+	// Emit event (async email sending)
+	event.Emit(PasswordResetEvent, UserWithResetToken{
+		User:  user,
+		Token: token,
+	})
+
+	return kit.Text(http.StatusOK, `<div class="p-6 text-center">A reset link has been sent.</div>`)
+
+}
+
+type ResetPasswordForm struct {
+	Password string `form:"password"`
+}
+
+func HandelResetPass(kit *kit.Kit) error {
+	token := kit.Request.URL.Query().Get("token")
+	if token == "" {
+		return kit.Text(http.StatusBadRequest, "Invalid email link")
+	}
+
+	switch kit.Request.Method {
+	case http.MethodGet:
+		// Render form
+		return handlers.RenderWithLayout(kit, ResetPasswordPage(token, nil))
+
+	case http.MethodPost:
+		// Parse and validate token
+		claims := &jwt.RegisteredClaims{}
+		parsedToken, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("SUPERKIT_SECRET")), nil
+		})
+		if err != nil || !parsedToken.Valid {
+			return kit.Text(http.StatusBadRequest, "Invalid or expired token")
+		}
+
+		userID, err := strconv.Atoi(claims.Subject)
+		if err != nil {
+			return kit.Text(http.StatusBadRequest, "Invalid token data")
+		}
+		password := kit.FormValue("password")
+		confirm := kit.FormValue("confirm_password")
+
+		if password == "" || confirm == "" || password != confirm {
+			return kit.Render(ResetPasswordPage(token, map[string]string{
+				"password": "Passwords do not match",
+			}))
+		}
+
+		form := ResetPasswordForm{Password: password}
+
+		errs, okPass := v.Validate(&form, v.Schema{
+			"password": passwordRules,
+		})
+
+		if !okPass {
+			return kit.Render(ResetPasswordPage(token, map[string]string{
+				"password": strings.Join(errs["password"], ", "),
+			}))
+		}
+
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err := db.Get().Model(&types.User{}).Where("id = ?", userID).Update("password_hash", string(hashed)).Error; err != nil {
+			return kit.Text(http.StatusInternalServerError, "Failed to update password")
+		}
+
+		return kit.Text(http.StatusOK, `<div class="p-6 text-center">Your password has been reset successfully. You may now log in.</div>`)
+
+	default:
+		return kit.Text(http.StatusMethodNotAllowed, "Method not allowed")
+	}
 }

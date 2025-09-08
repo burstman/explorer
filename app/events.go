@@ -19,6 +19,7 @@ import (
 func RegisterEvents() {
 	event.Subscribe(auth.UserSignupEvent, events.OnUserSignup)
 	event.Subscribe(auth.ResendVerificationEvent, events.OnResendVerificationToken)
+	event.Subscribe(auth.PasswordResetEvent, events.OnPasswordReset)
 }
 
 func OnUserSignup(payload any) {

@@ -6,7 +6,6 @@ import (
 	"explorer/app/handlers"
 
 	"explorer/app/types"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -156,7 +155,7 @@ func AuthenticateUser(kit *kit.Kit) (kit.Auth, error) {
 	auth := Auth{}
 	sess := kit.GetSession(userSessionName)
 	token, ok := sess.Values["sessionToken"]
-	fmt.Println("token", token)
+	//fmt.Println("token", token)
 	if !ok {
 		return auth, nil
 	}
@@ -168,7 +167,7 @@ func AuthenticateUser(kit *kit.Kit) (kit.Auth, error) {
 	if err != nil || session.ID == 0 {
 		return auth, nil
 	}
-	fmt.Println(session.User.Role)
+	//fmt.Println(session.User.Role)
 
 	return types.AuthUser{
 		LoggedIn: true,

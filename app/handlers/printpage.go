@@ -5,7 +5,6 @@ import (
 	"explorer/app/types"
 	"explorer/app/views/landing"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -18,7 +17,7 @@ func PrintBookings(kit *kit.Kit) error {
 	}
 
 	idsParam := kit.Request.FormValue("ids") // "1,2,3"
-	log.Println("id print", idsParam)
+
 	if idsParam == "" {
 		return fmt.Errorf("parsing ids is empty in HandlePrintBookings")
 	}

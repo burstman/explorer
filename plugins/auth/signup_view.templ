@@ -56,7 +56,7 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 		<div class="flex gap-4">
 			<!-- First Name -->
 			<div class="flex flex-col gap-1 w-1/2">
-				<label for="firstName">First Name *</label>
+				<label for="firstName">Prénom *</label>
 				<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
 				if errors.Has("firstName") {
 					<ul>
@@ -68,7 +68,7 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 			</div>
 			<!-- Last Name -->
 			<div class="flex flex-col gap-1 w-1/2">
-				<label for="lastName">Last Name *</label>
+				<label for="lastName">Nom *</label>
 				<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
 				if errors.Has("lastName") {
 					<ul>

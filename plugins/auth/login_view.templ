@@ -35,6 +35,14 @@ templ LoginIndex(data LoginIndexPageData) {
 					>
 						Don't have an account? Signup here.
 					</a>
+					<a
+						class="text-sm text-center underline text-black/70 hover:text-green-700 transition duration-200"
+						hx-get="/forgotPass"
+						hx-target="#main-content"
+						hx-swap="innerHTML"
+					>
+						Forgot your password?
+					</a>
 				</div>
 			</div>
 		</section>
@@ -105,4 +113,84 @@ func inputAttrs(hasError bool) templ.Attributes {
 	return templ.Attributes{
 		"class": class,
 	}
+}
+
+templ ForgotPasswordPage(formErrors map[string]string, formValues map[string]string) {
+	@layouts.BaseLayout() {
+		<section class="min-h-screen flex items-center justify-center bg-gray-100">
+			<div class="w-full max-w-md bg-white rounded-2xl p-8 shadow-lg flex flex-col gap-6">
+				<h2 class="text-center text-2xl font-semibold">Forgot Password</h2>
+				<form
+					hx-post="/forgotPass"
+					hx-target="#main-content"
+					hx-swap="innerHTML"
+					class="flex flex-col gap-4"
+				>
+					<input
+						type="email"
+						name="email"
+						placeholder="Enter your email"
+						value={ formValues["email"] }
+						class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+						required
+					/>
+					if formErrors["email"] != "" {
+						<p class="text-red-500 text-sm">{ formErrors["email"] }</p>
+					}
+					<button
+						type="submit"
+						class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+					>
+						Send Reset Link
+					</button>
+				</form>
+				<a
+					hx-get="/login"
+					hx-target="#main-content"
+					hx-swap="innerHTML"
+					class="text-sm text-center underline text-black/70 hover:text-green-700 transition"
+				>
+					Back to Login
+				</a>
+			</div>
+		</section>
+	}
+}
+
+templ ResetPasswordPage(token string, formErrors map[string]string) {
+	<section class="min-h-screen flex items-center justify-center bg-gray-100">
+		<div class="w-full max-w-md bg-white rounded-2xl p-8 shadow-lg flex flex-col gap-6">
+			<h2 class="text-center text-2xl font-semibold">Reset Password</h2>
+			<form
+				hx-post={ "/resetPass?token=" + token }
+				hx-target="#main-content"
+				hx-swap="innerHTML"
+				class="flex flex-col gap-4"
+			>
+				<input
+					type="password"
+					name="password"
+					placeholder="New password"
+					class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+					required
+				/>
+				<input
+					type="password"
+					name="confirm_password"
+					placeholder="Confirm password"
+					class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+					required
+				/>
+				if formErrors["password"] != "" {
+					<p class="text-red-500 text-sm">{ formErrors["password"] }</p>
+				}
+				<button
+					type="submit"
+					class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+				>
+					Reset Password
+				</button>
+			</form>
+		</div>
+	</section>
 }

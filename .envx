@@ -1,0 +1,40 @@
+# Application environment
+# production or development
+SUPERKIT_ENV=production
+# HTTP listen port of the application
+HTTP_LISTEN_ADDR=:4000
+
+# Database configuration
+DB_DRIVER=postgres
+DB_USER=neondb_owner
+DB_HOST=ep-cool-union-ab6svm7e-pooler.eu-west-2.aws.neon.tech
+DB_PASSWORD=npg_unwJD6ek3MFz
+DB_NAME=neondb
+DB_SSLMODE=require
+
+
+MIGRATION_DIR=app/db/migrations
+
+# Application secret used to secure your sessions.
+# The secret will be auto generated on install.
+# If you still want to change it make sure its at 
+# least 32 bytes long.
+# NOTE: You might want to change this secret when using
+# your app in production.
+SUPERKIT_SECRET=d67d491c71528698ab8449fc4d3cf42055340715632cdca48f58d7d5abd77b94
+
+# Authentication Plugin
+SUPERKIT_AUTH_REDIRECT_AFTER_LOGIN=/AreaAttraction
+SUPERKIT_AUTH_SESSION_EXPIRY_IN_HOURS=48
+# Skip user email verification after signup
+SUPERKIT_AUTH_SKIP_VERIFY=false
+SUPERKIT_AUTH_EMAIL_VERIFICATION_EXPIRY_IN_HOURS=1
+
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_USER=94a43b001@smtp-brevo.com
+SMTP_PASSWORD=VysUG1Cxc5vPgESt
+SMTP_SENDER=np-replay@explorerscamp.org
+
+
+NGROK_ADDRESS=https://explorerscamp.org
+

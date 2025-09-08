@@ -13,6 +13,10 @@ func InitializeRoutes(router chi.Router) {
 
 	router.Get("/email-verify", kit.Handler(HandleEmailVerify))
 	router.Post("/resend-email-verification", kit.Handler(HandleResendVerificationCode))
+	router.Get("/forgotPass", kit.Handler(HandelForgotPasswordPage))
+	router.Post("/forgotPass", kit.Handler(HandelResetPassEmailSend))
+	router.Get("/resetPass", kit.Handler(HandelResetPass))
+	router.Post("/resetPass", kit.Handler(HandelResetPass))
 
 	router.Group(func(auth chi.Router) {
 		auth.Use(kit.WithAuthentication(authConfig, false))
