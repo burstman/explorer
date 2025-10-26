@@ -8,7 +8,9 @@ import (
 	"explorer/app/types"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -33,11 +35,18 @@ func (s *KonnectService) CreateKonnectPayment(payment *types.KonnectPaymentRespo
 	return nil
 }
 
-func (s *KonnectService) doRequest(req *types.InitKonnectPaymentRequest, path string) ([]byte, error) {
-	payload, err := json.Marshal(req)
+func (s *KonnectService) doRequest(req types.InitPaymentRequest, path string) ([]byte, error) {
+	request, ok := req.(*types.InitKonnectPaymentRequest)
+	if !ok {
+		return nil, fmt.Errorf("invalid request type")
+	}
+
+	payload, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("Sending payment request: %+v", string(payload))
 
 	httpReq, err := http.NewRequest(http.MethodPost, s.BaseURL+path, bytes.NewBuffer(payload))
 	if err != nil {
@@ -60,22 +69,37 @@ func (s *KonnectService) doRequest(req *types.InitKonnectPaymentRequest, path st
 }
 
 // ✅ Implements PaymentService.InitPayment
-func (s *KonnectService) InitPayment(req *types.InitKonnectPaymentRequest) (types.PaymentResponse, error) {
+func (s *KonnectService) InitPayment(req types.InitPaymentRequest) (types.PaymentResponse, error) {
+
 	data, err := s.doRequest(req, "/payments/init-payment")
 	if err != nil {
 		return nil, err
 	}
+	type konnectAPIResp struct {
+		PayUrl     string `json:"payUrl"`
+		PaymentRef string `json:"paymentRef"`
+	}
 
-	var resp types.KonnectPaymentResponse
-	if err := json.Unmarshal(data, &resp); err != nil {
+	var apiResp konnectAPIResp
+
+	if err := json.Unmarshal(data, &apiResp); err != nil {
 		return nil, err
 	}
 
-	if err := s.CreateKonnectPayment(&resp); err != nil {
+	resp := &types.KonnectPaymentResponse{
+		PaymentRef:  apiResp.PaymentRef,
+		PaymentLink: apiResp.PayUrl,
+		Status:      "initiated",
+		Amount:      1000,
+		CreatedAt:   time.Now(),
+		ExpiresAt:   time.Now().Add(time.Duration(10) * time.Minute),
+	}
+
+	if err := s.CreateKonnectPayment(resp); err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 // ✅ Implements PaymentService.VerifySignature

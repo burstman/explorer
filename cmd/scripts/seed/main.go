@@ -45,40 +45,40 @@ func main() {
 	}
 
 	// Create Normal User
-	// user := types.User{
-	// 	Email:        "user@camping.tn",
-	// 	PasswordHash: string(hashedPassword),
-	// 	FirstName:    "Flissi",
-	// 	LastName:     "Hamed",
-	// 	Role:         "user",
-	// 	EmailVerifiedAt: sql.NullTime{
-	// 		Time:  now,
-	// 		Valid: true,
-	// 	},
-	// 	CreatedAt: now,
-	// 	UpdatedAt: now,
-	// }
-	// if err := database.Create(&user).Error; err != nil {
-	// 	log.Fatalf("failed to create user: %v", err)
-	// }
+	user := types.User{
+		Email:        "user@camping.tn",
+		PasswordHash: string(hashedPassword),
+		FirstName:    "Flissi",
+		LastName:     "Hamed",
+		Role:         "user",
+		EmailVerifiedAt: sql.NullTime{
+			Time:  now,
+			Valid: true,
+		},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if err := database.Create(&user).Error; err != nil {
+		log.Fatalf("failed to create user: %v", err)
+	}
 
-	// // Create Normal User
-	// user2 := types.User{
-	// 	Email:        "user2@camping.tn",
-	// 	PasswordHash: string(hashedPassword),
-	// 	FirstName:    "Bob",
-	// 	LastName:     "John",
-	// 	Role:         "user",
-	// 	EmailVerifiedAt: sql.NullTime{
-	// 		Time:  now,
-	// 		Valid: true,
-	// 	},
-	// 	CreatedAt: now,
-	// 	UpdatedAt: now,
-	// }
-	// if err := database.Create(&user2).Error; err != nil {
-	// 	log.Fatalf("failed to create user: %v", err)
-	// }
+	// Create Normal User
+	user2 := types.User{
+		Email:        "user2@camping.tn",
+		PasswordHash: string(hashedPassword),
+		FirstName:    "Bob",
+		LastName:     "John",
+		Role:         "user",
+		EmailVerifiedAt: sql.NullTime{
+			Time:  now,
+			Valid: true,
+		},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if err := database.Create(&user2).Error; err != nil {
+		log.Fatalf("failed to create user: %v", err)
+	}
 
 	// Create Bus Types
 	buses := []types.BuseType{

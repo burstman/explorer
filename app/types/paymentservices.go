@@ -8,10 +8,11 @@ type PaymentResponse interface {
 	GetPaymentRef() string
 	GetAmount() int
 	GetStatus() string
+	GetPaymentLink() string
 }
 
 type PaymentService interface {
-	InitPayment() (PaymentResponse, error)
+	InitPayment(InitPaymentRequest) (PaymentResponse, error)
 	VerifySignature(secret, body, signature string) bool // optional if provider supports it
 	GetPaymentStatus(paymentID string) (string, error)   // optional
 }

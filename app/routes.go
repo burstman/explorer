@@ -1,15 +1,21 @@
 package app
 
 import (
+	"encoding/json"
 	"explorer/app/handlers"
 	"explorer/app/views/errors"
 	"explorer/plugins/auth"
 	"explorer/plugins/booking"
 	buses "explorer/plugins/busesConfig"
 	"explorer/plugins/campsite"
+	"explorer/plugins/paymentservices"
 	"explorer/plugins/services"
 	"explorer/plugins/status"
+	"io"
+	"log"
 	"log/slog"
+	"net/http"
+	"os"
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/anthdm/superkit/kit/middleware"
@@ -89,7 +95,52 @@ func InitializeRoutes(router *chi.Mux) {
 		app.Post("/admin/bookings/{userID}/create", kit.Handler(handlers.AdminBookingAdd))
 		app.Post("/admin/bookings/{Bookid}/edit", kit.Handler(handlers.EditPostBooking))
 		app.Post("/admin/carousel/create", kit.Handler(handlers.CarouselImageCreate))
-		app.Post("/user/konnect/payment/Init", kit.Handler(handlers.KonnectInitPayment))
+		app.Post("/user/konnect/payment/Init", kit.Handler(func(kit *kit.Kit) error {
+			service := &paymentservices.KonnectService{
+				APIKey:     os.Getenv("KONNECT_API_KEY"),
+				BaseURL:    os.Getenv("KONNECT_API_BASE_URL"),
+				WebhookURL: os.Getenv("WEBHOOK_URL"),
+				SuccessURL: os.Getenv("SUCCESS_URL"),
+				FailURL:    os.Getenv("FAIL_URL"),
+				WalletID:   os.Getenv("RECEIVER_WALLET_ID"),
+			}
+			return handlers.KonnectInitPayment(kit, service)
+		}))
+		app.Post("/payments/webhook", kit.Handler(func(kit *kit.Kit) error {
+			body, err := io.ReadAll(kit.Request.Body)
+			if err != nil {
+				return err
+			}
+
+			log.Println("📩 Konnect WEBHOOK received:", string(body))
+
+			// just echo back JSON so you see it in browser / logs
+			kit.Response.Header().Set("Content-Type", "application/json")
+			kit.Response.WriteHeader(http.StatusOK)
+			kit.Response.Write(body)
+			return nil
+		}))
+
+		app.Get("/payments/success", kit.Handler(func(kit *kit.Kit) error {
+			q := kit.Request.URL.Query()
+			log.Println("✅ Konnect SUCCESS redirect:", q)
+
+			// send back JSON with all query params
+			kit.Response.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(kit.Response).Encode(q)
+			return nil
+		}))
+
+		app.Get("/payments/fail", kit.Handler(func(kit *kit.Kit) error {
+			q := kit.Request.URL.Query()
+			log.Println("❌ Konnect FAIL redirect:", q)
+
+			kit.Response.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(kit.Response).Encode(q)
+			return nil
+		}))
+
+		// Deletion routes
 
 		app.Post("/admin/campsites/delete/{ID}", kit.Handler(campsite.HandleCampsiteDelete))
 		app.Post("/admin/buses/{id}/delete", kit.Handler(buses.HandleDelete))

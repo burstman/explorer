@@ -16,16 +16,17 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 }
 	}}
 	{{data := map[string]interface{}{
-	"campPrice":        camp.Price,
-	"guests":           []map[string]string{},
-	"guestCount":       0,
-	"services":         serviceQuantity,
-	"servicesData":     servicesMap,
-	"termsOpen":        false,
-	"showPaymentModal": false,
-	"paymentMethod":    "",
-	"userStatus":       "",
-	"showConfirmModal": false,
+	"campPrice":              camp.Price,
+	"guests":                 []map[string]string{},
+	"guestCount":             0,
+	"services":               serviceQuantity,
+	"servicesData":           servicesMap,
+	"termsOpen":              false,
+	"showPaymentModal":       false,
+	"paymentMethod":          "",
+	"userStatus":             "",
+	"showCashConfirmModal":   false,
+	"showOnlineConfirmModal": false,
 }
 	}}
 	<div
@@ -50,10 +51,14 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 	}
 	return (campPrice * guestsFactor + servicesTotal).toFixed(2);
 };
-submitBooking = (method) => {
-	paymentMethod = method;
-	userStatus='booked'
+submitBooking = () => {
+	paymentMethod = 'cash';
+	userStatus='booked';
 	$nextTick(() => { $refs.bookingForm.submit(); });
+};
+
+submitOnlineBooking = () => {
+$nextTick(() => { $refs.konnectForm.submit(); });
 };` }
 	>
 		<section class="relative min-h-screen">
@@ -118,6 +123,7 @@ submitBooking = (method) => {
 		</section>
 		@PaymentMethod()
 		@ConfirmationCachPayement()
+		@ConfirmationOnlinePayment()
 	</div>
 }
 
@@ -289,17 +295,23 @@ templ PaymentMethod() {
 			<!-- ✅ Pay with Cash: Triggers form submit -->
 			<button
 				type="button"
-				@click="paymentMethod = 'cash';showPaymentModal = false; showConfirmModal = true"
+				@click="paymentMethod = 'cash';showPaymentModal = false; showCashConfirmModal = true"
 				class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded mb-4"
 			>
 				💵 Payer en espèces (sur place)
 			</button>
-			<!-- 💳 Online Disabled -->
+			<form x-ref="konnectForm" action="/user/konnect/payment/Init" method="post">
+				<input type="hidden" name="amount" :value="total()"/>
+				<!-- include whatever else your handler needs: booking id, etc. -->
+			</form>
 			<button
-				disabled
-				class="w-full bg-gray-300 text-gray-600 py-2 px-4 rounded cursor-not-allowed"
+				type="button"
+				@click="paymentMethod = 'online';
+				showPaymentModal = false;
+				showOnlineConfirmModal = true;"
+				class="w-full bg-gray-300 text-gray-600 py-2 px-4 rounded"
 			>
-				💳 Payer en ligne (à venir)
+				💳 Payer en ligne 
 			</button>
 		</div>
 	</div>
@@ -309,14 +321,14 @@ templ ConfirmationCachPayement() {
 	<div>
 		<!-- Modal Backdrop -->
 		<div
-			x-show="showConfirmModal"
+			x-show="showCashConfirmModal"
 			x-transition
 			class="fixed inset-0 bg-black/50 z-40"
-			@click="showConfirmModal = false"
+			@click.self="showCashConfirmModal = false"
 		></div>
 		<!-- Modal Content -->
 		<div
-			x-show="showConfirmModal"
+			x-show="showCashConfirmModal"
 			x-transition
 			class="fixed inset-0 z-50 flex items-center justify-center"
 			style="backdrop-filter: blur(3px);"
@@ -329,7 +341,7 @@ templ ConfirmationCachPayement() {
 				<div class="flex justify-center gap-4 mt-4">
 					<!-- Cancel -->
 					<button
-						@click="showConfirmModal = false"
+						@click="showCashConfirmModal = false"
 						type="button"
 						class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md"
 					>
@@ -338,7 +350,51 @@ templ ConfirmationCachPayement() {
 					<!-- Confirm / Submit the actual form -->
 					<button
 						type="button"
-						@click="submitBooking('cash')"
+						@click="submitCashBooking()"
+						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+					>
+						Yes, Confirm
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ ConfirmationOnlinePayment() {
+	<div>
+		<!-- Modal Backdrop -->
+		<div
+			x-show="showOnlineConfirmModal"
+			x-transition
+			class="fixed inset-0 bg-black/50 z-40"
+			@click.self="showOnlineConfirmModal = false"
+		></div>
+		<!-- Modal Content -->
+		<div
+			x-show="showOnlineConfirmModal"
+			x-transition
+			class="fixed inset-0 z-50 flex items-center justify-center"
+			style="backdrop-filter: blur(3px);"
+		>
+			<div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full space-y-4">
+				<h2 class="text-xl font-bold text-center text-gray-800">Confirmer Votre Réservation</h2>
+				<p class="text-gray-600 text-sm text-center">
+					Voulez-vous vraiment réserver en ligne ? Vous serez redirigé vers la page de paiement.
+				</p>
+				<div class="flex justify-center gap-4 mt-4">
+					<!-- Cancel -->
+					<button
+						@click="showOnlineConfirmModal = false"
+						type="button"
+						class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md"
+					>
+						No
+					</button>
+					<!-- Confirm / Submit the actual form -->
+					<button
+						type="button"
+						@click="submitOnlineBooking()"
 						class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
 					>
 						Yes, Confirm

@@ -6,7 +6,7 @@ import "time"
 type InitKonnectPaymentRequest struct {
 	ReceiverWalletId       string   `json:"receiverWalletId"`
 	Token                  string   `json:"token"`
-	Amount                 int      `json:"amount"`
+	Amount                 float64  `json:"amount"`
 	Type                   string   `json:"type"`
 	Description            string   `json:"description"`
 	AcceptedPaymentMethods []string `json:"acceptedPaymentMethods"`
@@ -27,15 +27,17 @@ type InitKonnectPaymentRequest struct {
 
 // KonnectPaymentResponse represents the API response from Konnect
 type KonnectPaymentResponse struct {
-	ID         int       `json:"id"`
-	PaymentRef string    `json:"paymentRef" gorm:"uniqueIndex;size:100;not null"`
-	Status     string    `json:"status"`
-	Amount     int       `json:"amount"`
-	CreatedAt  time.Time `json:"createdAt"`
-	ExpiresAt  time.Time `json:"expiresAt"`
+	ID          int       `json:"id"`
+	PaymentRef  string    `json:"paymentRef" gorm:"uniqueIndex;size:100;not null"`
+	PaymentLink string    `json:"payUrl"`
+	Status      string    `json:"status"`
+	Amount      int       `json:"amount"`
+	CreatedAt   time.Time `json:"createdAt"`
+	ExpiresAt   time.Time `json:"expiresAt"`
 }
 
 // Implement generic interface
-func (k *KonnectPaymentResponse) GetPaymentRef() string { return k.PaymentRef }
-func (k *KonnectPaymentResponse) GetAmount() int        { return k.Amount }
-func (k *KonnectPaymentResponse) GetStatus() string     { return k.Status }
+func (k *KonnectPaymentResponse) GetPaymentLink() string { return k.PaymentLink }
+func (k *KonnectPaymentResponse) GetPaymentRef() string  { return k.PaymentRef }
+func (k *KonnectPaymentResponse) GetAmount() int         { return k.Amount }
+func (k *KonnectPaymentResponse) GetStatus() string      { return k.Status }
