@@ -105,7 +105,35 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 		<!-- Password -->
 		<div class="flex flex-col gap-1">
 			<label for="password">Password *</label>
-			<input { inputAttrs(errors.Has("password"))... } type="password" name="password" id="password"/>
+			<div x-data="{ show: false }" class="relative">
+				<input
+					{ inputAttrs(errors.Has("password"))... }
+					:type="show ? 'text' : 'password'"
+					name="password"
+					id="password"
+					class="w-full pr-10"
+				/>
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+					tabindex="-1"
+				>
+					<template x-if="!show">
+						<!-- Eye open -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a11.955 11.955 0 0119.928 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+					</template>
+					<template x-if="show">
+						<!-- Eye closed -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223a10.477 10.477 0 0116.04 0M9.88 9.88a3 3 0 104.24 4.24"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0M3 3l18 18"></path>
+						</svg>
+					</template>
+				</button>
+			</div>
 			if errors.Has("password") {
 				<ul>
 					for _, err := range errors.Get("password") {
@@ -117,7 +145,35 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 		<!-- Confirm Password -->
 		<div class="flex flex-col gap-1">
 			<label for="passwordConfirm">Confirm Password *</label>
-			<input { inputAttrs(errors.Has("passwordConfirm"))... } type="password" name="passwordConfirm" id="passwordConfirm"/>
+			<div x-data="{ show: false }" class="relative">
+				<input
+					{ inputAttrs(errors.Has("passwordConfirm"))... }
+					:type="show ? 'text' : 'password'"
+					name="passwordConfirm"
+					id="passwordConfirm"
+					class="w-full pr-10"
+				/>
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+					tabindex="-1"
+				>
+					<template x-if="!show">
+						<!-- Eye open -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a11.955 11.955 0 0119.928 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+					</template>
+					<template x-if="show">
+						<!-- Eye closed -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223a10.477 10.477 0 0116.04 0M9.88 9.88a3 3 0 104.24 4.24"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0M3 3l18 18"></path>
+						</svg>
+					</template>
+				</button>
+			</div>
 			if errors.Has("passwordConfirm") {
 				<div class="text-red-500 text-xs">{ errors.Get("passwordConfirm")[0] }</div>
 			}
