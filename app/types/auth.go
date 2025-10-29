@@ -69,9 +69,10 @@ type User struct {
 	Email                  string
 	FirstName              string
 	LastName               string
-	PasswordHash           string
+	PasswordHash           *string
 	PhoneNumber            string
-	SocialLink             string
+	SocialID               *string
+	Provider               *string
 	Cin                    string
 	EmailVerifiedAt        sql.NullTime
 	Role                   string `gorm:"not null;default:user"`

@@ -57,7 +57,7 @@ func HandleLoginCreate(kit *kit.Kit) error {
 		}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(values.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(*user.PasswordHash), []byte(values.Password))
 	if err != nil {
 		errors.Add("credentials", "invalid credentials")
 		return kit.Render(LoginForm(values, errors))

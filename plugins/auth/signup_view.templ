@@ -87,13 +87,13 @@ templ SignupForm(values SignupFormValues, errors v.Errors) {
 			}
 		</div>
 		<!-- Social Link -->
-		<div class="flex flex-col gap-1">
-			<label for="socialLink">Social Link (Facebook or Instagram)</label>
-			<input { inputAttrs(errors.Has("socialLink"))... } name="socialLink" id="socialLink" value={ values.SocialLink }/>
-			if errors.Has("socialLink") {
-				<div class="text-red-500 text-xs">{ errors.Get("socialLink")[0] }</div>
-			}
-		</div>
+		// <div class="flex flex-col gap-1">
+		// 	<label for="socialLink">Social Link (Facebook or Instagram)</label>
+		// 	<input { inputAttrs(errors.Has("socialLink"))... } name="socialLink" id="socialLink" value={ values.SocialLink }/>
+		// 	if errors.Has("socialLink") {
+		// 		<div class="text-red-500 text-xs">{ errors.Get("socialLink")[0] }</div>
+		// 	}
+		// </div>
 		<!-- Card Identity Number -->
 		<div class="flex flex-col gap-1">
 			<label for="cardIdentityNumber">National ID Number *</label>

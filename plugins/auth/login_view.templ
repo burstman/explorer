@@ -51,6 +51,7 @@ templ LoginIndex(data LoginIndexPageData) {
 
 templ LoginForm(values LoginFormValues, errors v.Errors) {
 	<form hx-post="/login" class="flex flex-col gap-5">
+		<!-- Email Field -->
 		<div class="flex flex-col gap-2">
 			<label for="email" class="text-sm text-black">Email *</label>
 			<input
@@ -64,15 +65,53 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
 		</div>
-		<div class="flex flex-col gap-2">
+		<!-- Password Field with Eye Toggle -->
+		<div class="flex flex-col gap-2" x-data="{ show: false }">
 			<label for="password" class="text-sm text-black">Password *</label>
-			<input
-				{ inputAttrs(errors.Has("password"))... }
-				type="password"
-				name="password"
-				id="password"
-				class="bg-white/10 border border-white/20 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-			/>
+			<!-- Relative wrapper for icon positioning -->
+			<div class="relative">
+				<input
+					{ inputAttrs(errors.Has("password"))... }
+					:type="show ? 'text' : 'password'"
+					name="password"
+					id="password"
+					class="w-full bg-white/10 border border-white/20 text-black px-4 py-2 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+					placeholder="Enter your password"
+				/>
+				<!-- Eye icon button -->
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-green-600 focus:outline-none"
+					tabindex="-1"
+				>
+					<!-- Show icon -->
+					<svg x-show="!show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+						></path>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+						></path>
+					</svg>
+					<!-- Hide icon -->
+					<svg x-show="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.048-3.362M9.88 9.88A3 3 0 0114.12 14.12M9.88 9.88L4.22 4.22m9.9 9.9l5.66 5.66M15 12a3 3 0 00-3-3"
+						></path>
+					</svg>
+				</button>
+			</div>
+			<!-- Error messages -->
 			if errors.Has("password") {
 				<ul class="list-disc ml-4">
 					for _, err := range errors.Get("password") {
@@ -87,12 +126,38 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("verified")[0] }</div>
 			}
 		</div>
+		<!-- Submit Button -->
 		<button
 			{ buttonAttrs()... }
 			class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition"
 		>
 			Login
 		</button>
+		<!-- Divider -->
+		<div class="flex items-center justify-center gap-2 text-gray-400 text-sm my-2">
+			<div class="flex-1 h-px bg-gray-300"></div>
+			<span>or</span>
+			<div class="flex-1 h-px bg-gray-300"></div>
+		</div>
+		<!-- Social Login Buttons -->
+		<div class="flex flex-col gap-3">
+			<!-- Google Button -->
+			<a
+				href="/auth/google/"
+				class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 hover:bg-gray-100 transition"
+			>
+				<img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" class="w-5 h-5"/>
+				<span class="text-sm font-medium text-gray-700">Continue with Google</span>
+			</a>
+			<!-- Facebook Button -->
+			<a
+				href="/auth/facebook/"
+				class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 bg-[#1877F2] hover:bg-[#166fe5] text-white transition"
+			>
+				<img src="https://www.svgrepo.com/show/452196/facebook-1.svg" alt="Facebook" class="w-5 h-5 bg-white rounded-full p-0.5"/>
+				<span class="text-sm font-medium">Continue with Facebook</span>
+			</a>
+		</div>
 	</form>
 }
 

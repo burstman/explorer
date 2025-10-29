@@ -221,3 +221,13 @@ func HandelResetPass(kit *kit.Kit) error {
 		return kit.Text(http.StatusMethodNotAllowed, "Method not allowed")
 	}
 }
+
+func FacebookLogin(kit *kit.Kit) error {
+
+	return kit.Text(http.StatusOK, "Facebook Login")
+}
+
+func FacebookCallback(kit *kit.Kit) error {
+
+	return kit.Text(http.StatusOK, "Facebook Callback")
+}

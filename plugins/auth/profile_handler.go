@@ -45,7 +45,6 @@ func HandleProfileShow(kit *kit.Kit) error {
 		LastName:             user.LastName,
 		Email:                user.Email,
 		PhoneNumber:          user.PhoneNumber,
-		SocialLink:           user.SocialLink,
 		NationalIdentityCard: user.Cin,
 	}
 
@@ -76,7 +75,6 @@ func HandleProfileUpdate(kit *kit.Kit) error {
 			FirstName:   values.FirstName,
 			LastName:    values.LastName,
 			PhoneNumber: values.PhoneNumber,
-			SocialLink:  values.SocialLink,
 			Cin:         values.NationalIdentityCard,
 		}).Error
 	if err != nil {

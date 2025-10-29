@@ -17,6 +17,8 @@ func main() {
 
 	app.InitializeMiddleware(router)
 
+	app.InitializeGoth()
+
 	if kit.IsDevelopment() {
 		router.Handle("/public/*", disableCache(staticDev()))
 	} else if kit.IsProduction() {
@@ -55,9 +57,3 @@ func disableCache(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// func init() {
-// 	if err := godotenv.Load(); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }

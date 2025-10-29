@@ -185,7 +185,7 @@ templ BookingDetailModal(booking types.Bookings) {
 			<p><strong>Customer:</strong> { booking.User.FirstName } { booking.User.LastName } ({ booking.User.Email })</p>
 			<p><strong>Phone:</strong>{ booking.User.PhoneNumber }</p>
 			<p><strong>CIN:</strong>{ booking.User.Cin }</p>
-			<p><strong>Social Link:</strong>{ booking.User.SocialLink }</p>
+			//<p><strong>Social Link:</strong>{ booking.User.SocialLink }</p>
 			<p><strong>Camp:</strong> { booking.Camp.Name }</p>
 			<p><strong>Booking Date:</strong> { booking.CreatedAt.Format("2006-01-02 15:04") }</p>
 			<p><strong>Status:</strong> <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span></p>

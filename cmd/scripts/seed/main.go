@@ -27,9 +27,10 @@ func main() {
 	now := time.Now()
 
 	// Create Admin
+	adminPass := string(hashedPassword)
 	admin := types.User{
 		Email:        "admin@camping.tn",
-		PasswordHash: string(hashedPassword),
+		PasswordHash: &adminPass,
 		FirstName:    "Hamrouni",
 		LastName:     "Foued",
 		Role:         "admin",
@@ -43,11 +44,11 @@ func main() {
 	if err := database.Create(&admin).Error; err != nil {
 		log.Fatalf("failed to create admin: %v", err)
 	}
-
 	// Create Normal User
+	userPass := string(hashedPassword)
 	user := types.User{
 		Email:        "user@camping.tn",
-		PasswordHash: string(hashedPassword),
+		PasswordHash: &userPass,
 		FirstName:    "Flissi",
 		LastName:     "Hamed",
 		Role:         "user",
@@ -61,11 +62,11 @@ func main() {
 	if err := database.Create(&user).Error; err != nil {
 		log.Fatalf("failed to create user: %v", err)
 	}
-
 	// Create Normal User
+	user2Pass := string(hashedPassword)
 	user2 := types.User{
 		Email:        "user2@camping.tn",
-		PasswordHash: string(hashedPassword),
+		PasswordHash: &user2Pass,
 		FirstName:    "Bob",
 		LastName:     "John",
 		Role:         "user",

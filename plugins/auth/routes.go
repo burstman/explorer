@@ -11,6 +11,9 @@ func InitializeRoutes(router chi.Router) {
 		RedirectURL: "/login",
 	}
 
+	router.Get("/auth/{provider}/", kit.Handler(CombinedAuthHandler))
+	router.Get("/auth/{provider}/callback", kit.Handler(CombinedAuthHandler))
+
 	router.Get("/email-verify", kit.Handler(HandleEmailVerify))
 	router.Post("/resend-email-verification", kit.Handler(HandleResendVerificationCode))
 	router.Get("/forgotPass", kit.Handler(HandelForgotPasswordPage))

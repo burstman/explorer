@@ -56,14 +56,14 @@ func createUserFormValues(values SignupFormValues) (types.User, error) {
 	if err != nil {
 		return types.User{}, err
 	}
+	strhash := string(hash)
 	user := types.User{
 		Email:        values.Email,
 		FirstName:    values.FirstName,
 		LastName:     values.LastName,
 		Role:         "user",
-		PasswordHash: string(hash),
+		PasswordHash: &strhash,
 		PhoneNumber:  values.PhoneNumber,
-		SocialLink:   values.SocialLink,
 		Cin:          values.CardIdentityNumber,
 	}
 	result := db.Get().Create(&user)

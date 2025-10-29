@@ -10,13 +10,6 @@ import (
 	"log"
 )
 
-// func init() {
-// 	err := godotenv.Load()
-// 	if err != nil {
-// 		log.Fatal("Error loading .env file")
-// 	}
-// }
-
 var ngrokURL = os.Getenv("NGROK_ADDRESS")
 
 // Event handlers
