@@ -172,7 +172,7 @@ func HandleBookNew(kit *kit.Kit) error {
 		return err
 	}
 
-	return RenderWithLayout(kit, landing.NewBooking(camp, user, services))
+	return RenderWithLayout(kit, landing.NewBooking(camp, user, services, types.BookingFormValues{}, nil))
 }
 
 func CampDescription(kit *kit.Kit) error {

@@ -34,7 +34,18 @@ func HandleLoginIndex(kit *kit.Kit) error {
 		redirectURL := kit.Getenv("SUPERKIT_AUTH_REDIRECT_AFTER_LOGIN", "/profile")
 		return kit.Redirect(http.StatusSeeOther, redirectURL)
 	}
-	return handlers.RenderWithLayout(kit, LoginIndex(LoginIndexPageData{}))
+
+	sess := kit.GetSession("user-session")
+	var flash string
+	if msg, ok := sess.Values["flash"].(string); ok {
+		flash = msg
+		delete(sess.Values, "flash") // clear after displaying
+		sess.Save(kit.Request, kit.Response)
+	}
+
+	return handlers.RenderWithLayout(kit, LoginIndex(LoginIndexPageData{
+		FlashMessage: flash,
+	}))
 }
 
 // HandleLoginCreate processes user login by validating credentials, checking email verification,
@@ -57,10 +68,18 @@ func HandleLoginCreate(kit *kit.Kit) error {
 		}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(*user.PasswordHash), []byte(values.Password))
-	if err != nil {
-		errors.Add("credentials", "invalid credentials")
+	if user.Provider != nil && *user.Provider != "local" {
+		errors.Add("provider", "please log in using "+*user.Provider)
 		return kit.Render(LoginForm(values, errors))
+	}
+	if user.PasswordHash != nil {
+		err = bcrypt.CompareHashAndPassword([]byte(*user.PasswordHash), []byte(values.Password))
+		if err != nil {
+			errors.Add("credentials", "invalid credentials")
+			return kit.Render(LoginForm(values, errors))
+		}
+	} else {
+		errors.Add("credentials", "invalid credentials")
 	}
 
 	skipVerify := kit.Getenv("SUPERKIT_AUTH_SKIP_VERIFY", "false")

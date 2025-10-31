@@ -6,8 +6,9 @@ import (
 )
 
 type LoginIndexPageData struct {
-	FormValues LoginFormValues
-	FormErrors v.Errors
+	FormValues   LoginFormValues
+	FormErrors   v.Errors
+	FlashMessage string
 }
 
 type LoginFormValues struct {
@@ -43,6 +44,18 @@ templ LoginIndex(data LoginIndexPageData) {
 					>
 						Forgot your password?
 					</a>
+				</div>
+			</div>
+			<div
+				x-data="{ show: true }"
+				x-init="setTimeout(() => show = false, 4000)"
+				x-show="show"
+				x-transition
+				class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 text-white px-4 py-3 rounded shadow-lg bg-red-600"
+			>
+				<div class="flex justify-between items-center gap-4">
+					<span>{ data.FlashMessage }</span>
+					<button @click="show = false" class="text-white font-bold">✕</button>
 				</div>
 			</div>
 		</section>
@@ -112,6 +125,13 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 				</button>
 			</div>
 			<!-- Error messages -->
+			if errors.Has("provider") {
+				<ul class="list-disc ml-4">
+					for _, err := range errors.Get("provider") {
+						<li class="text-red-500 text-xs">provider { err }</li>
+					}
+				</ul>
+			}
 			if errors.Has("password") {
 				<ul class="list-disc ml-4">
 					for _, err := range errors.Get("password") {

@@ -29,6 +29,7 @@ func HandelCreateBooking(kit *kit.Kit) error {
 	if err != nil {
 		return fmt.Errorf("invalid totalPrice  in HandelCreateBooking: %v ", err)
 	}
+
 	paymentMethod := kit.Request.FormValue("payment_method")
 	status := kit.Request.FormValue("userStatus")
 
@@ -67,11 +68,20 @@ func HandelCreateBooking(kit *kit.Kit) error {
 
 	// Create booking with nested associations
 	if err := db.Get().Create(&booking).Error; err != nil {
-
 		return err
 	}
 
-	return kit.Redirect(http.StatusSeeOther, "/")
+	userUpdate := types.User{
+		PhoneNumber: kit.Request.FormValue("phoneNumber"),
+		Cin:         kit.Request.FormValue("identityCard"),
+	}
+
+	// update the authenticated user's record
+	if err := db.Get().Model(&types.User{}).Where("id = ?", auth.UserID).Updates(userUpdate).Error; err != nil {
+		return err
+	}
+
+	return kit.Redirect(http.StatusSeeOther, "/status")
 }
 
 func GuestParsing(kit *kit.Kit) ([]types.Guest, error) {

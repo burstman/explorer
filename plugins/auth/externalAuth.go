@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"explorer/app/db"
 	"explorer/app/types"
+
 	"fmt"
 	"log"
 	"net/http"
@@ -12,13 +14,14 @@ import (
 
 	"github.com/anthdm/superkit/kit"
 	"github.com/google/uuid"
+	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"gorm.io/gorm"
 )
 
 func CombinedAuthHandler(kit *kit.Kit) error {
 	path := kit.Request.URL.Path
-	log.Printf("OAuth path: %s", path)
+	//log.Printf("OAuth path: %s", path)
 
 	if strings.HasSuffix(path, "/callback") {
 		user, err := gothic.CompleteUserAuth(kit.Response, kit.Request)
@@ -29,6 +32,33 @@ func CombinedAuthHandler(kit *kit.Kit) error {
 
 		}
 
+		// ✅ Check if a user already exists
+		dbUser, err := FindUserByEmail(user.Email)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("database error: %v", err)
+		}
+
+		if dbUser != nil {
+			// ✅ User exists → check provider consistency
+			if dbUser.Provider != nil && *dbUser.Provider != user.Provider {
+				// The user registered with another provider
+				log.Printf("Provider mismatch: existing=%s, tried=%s", *dbUser.Provider, user.Provider)
+				// ✅ Add flash message
+				sess := kit.GetSession("user-session")
+				sess.Values["flash"] = fmt.Sprintf("You already registered using %s. Please log in with %s.", *dbUser.Provider, *dbUser.Provider)
+				sess.Save(kit.Request, kit.Response)
+
+				return kit.Redirect(http.StatusSeeOther, "/login")
+
+			}
+		} else {
+			// ✅ New user → allow creation
+			dbUser, err = CreateUserFromOAuth(user)
+			if err != nil {
+				return fmt.Errorf("failed to create user: %v", err)
+			}
+		}
+
 		// ✅ Store in Superkit session (optional)
 		sess := kit.GetSession("user-session")
 		sess.Values["name"] = user.Name
@@ -37,17 +67,12 @@ func CombinedAuthHandler(kit *kit.Kit) error {
 		sess.Values["social_id"] = user.UserID
 		sess.Save(kit.Request, kit.Response)
 
-		dbUser, err := FindOrCreateUserByEmail(user.Email, &user.FirstName, &user.LastName, &user.UserID, &user.Provider)
-		if err != nil {
-			log.Printf("Error finding or creating user: %v", err)
-			return fmt.Errorf("failed to find or create user: %v", err)
-		}
 		dbUser.FirstName = user.FirstName // if available
 		dbUser.LastName = user.LastName   // if available
 		dbUser.SocialID = &user.UserID
 		dbUser.Provider = &user.Provider
 
-		log.Printf("User info from provider: %+v", user)
+		//log.Printf("User info from provider: %+v", user)
 
 		sessionExpiryStr := kit.Getenv("SUPERKIT_AUTH_SESSION_EXPIRY_IN_HOURS", "48")
 		sessionExpiry, err := strconv.Atoi(sessionExpiryStr)
@@ -75,59 +100,24 @@ func CombinedAuthHandler(kit *kit.Kit) error {
 	return nil
 }
 
-// FindOrCreateUserByEmail looks up a user by email or creates/updates one
-func FindOrCreateUserByEmail(email string, firstName, lastName, socialID, provider *string) (*types.User, error) {
+func FindUserByEmail(email string) (*types.User, error) {
 	var user types.User
-
-	err := db.Get().Where("email = ?", email).First(&user).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err := db.Get().Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
-
-	if err == gorm.ErrRecordNotFound {
-		// Create new user
-		user = types.User{
-			Email:     email,
-			FirstName: *firstName,
-			LastName:  *lastName,
-			SocialID:  socialID,
-			Provider:  provider,
-			Role:      "user",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-
-		if err := db.Get().Create(&user).Error; err != nil {
-			return nil, err
-		}
-		return &user, nil
-	}
-
-	// Update existing user with new social info if missing
-	updated := false
-	if firstName != nil && user.FirstName == "" {
-		user.FirstName = *firstName
-		updated = true
-	}
-	if lastName != nil && (user.LastName == "") {
-		user.LastName = *lastName
-		updated = true
-	}
-	if socialID != nil && (user.SocialID == nil || *user.SocialID == "") {
-		user.SocialID = socialID
-		updated = true
-	}
-	if provider != nil && (user.Provider == nil || *user.Provider == "") {
-		user.Provider = provider
-		updated = true
-	}
-
-	if updated {
-		user.UpdatedAt = time.Now()
-		if err := db.Get().Save(&user).Error; err != nil {
-			return nil, err
-		}
-	}
-
 	return &user, nil
+}
+
+func CreateUserFromOAuth(user goth.User) (*types.User, error) {
+	dbUser := types.User{
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		SocialID:  &user.UserID,
+		Provider:  &user.Provider,
+	}
+	if err := db.Get().Create(&dbUser).Error; err != nil {
+		return nil, err
+	}
+	return &dbUser, nil
 }

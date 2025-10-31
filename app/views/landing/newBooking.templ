@@ -2,12 +2,15 @@ package landing
 
 import (
 	"explorer/app/types"
+
 	"fmt"
+	v "github.com/anthdm/superkit/validate"
 	"strconv"
 	"time"
 )
 
-templ NewBooking(camp types.CampSite, user types.User, allService []types.Service) {
+templ NewBooking(camp types.CampSite, user types.User, allService []types.Service,
+	values types.BookingFormValues, errors v.Errors) {
 	{{ servicesMap := map[string]float64{} }}
 	{{ serviceQuantity := map[string]int{} }}
 	{{for _, s := range allService {
@@ -51,12 +54,12 @@ templ NewBooking(camp types.CampSite, user types.User, allService []types.Servic
 	}
 	return (campPrice * guestsFactor + servicesTotal).toFixed(2);
 };
-submitBooking = () => {
-	paymentMethod = 'cash';
-	userStatus='booked';
-	$nextTick(() => { $refs.bookingForm.submit(); });
-};
-
+	submitCashBooking = () => {
+		paymentMethod = 'cash';
+		userStatus = 'booked';
+		showCashConfirmModal = false;
+		$nextTick(() => { $refs.bookingForm.submit(); });
+	};
 submitOnlineBooking = () => {
 $nextTick(() => { $refs.konnectForm.submit(); });
 };` }
@@ -127,6 +130,33 @@ $nextTick(() => { $refs.konnectForm.submit(); });
 	</div>
 }
 
+templ InputField(label, name, value string) {
+	<div class="flex flex-col gap-1">
+		<label for={ name } class="text-gray-700 text-sm font-medium">{ label }</label>
+		<input
+			type="text"
+			name={ name }
+			id={ name }
+			value={ value }
+			class="bg-white text-gray-900 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+			if name == "identityCard" {
+				pattern="[0-9]{8}"
+				title="Doit étre exactement 8 chiffres"
+				maxlength="8"
+				inputmode="numeric"
+			}
+			else
+			if name == "phoneNumber" {
+				pattern="^[0-9]{8,15}$"
+				title="Le numéro de téléphone doit être compris entre 8 et 15 chiffres"
+				maxlength="15"
+				inputmode="tel"
+			}
+			required
+		/>
+	</div>
+}
+
 templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Service) {
 	<form
 		action="/user/bookings"
@@ -146,24 +176,20 @@ templ BookingForm(camp types.CampSite, user types.User, Allservice []types.Servi
 		<input type="hidden" name="userStatus" :value="userStatus"/>
 		<!-- User Profile Info -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<div>
-				<label class="text-sm text-gray-700">Prénom</label>
-				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.FirstName }/>
-			</div>
-			<div>
-				<label class="text-sm text-gray-700">Nom</label>
-				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ user.LastName }/>
-			</div>
+			@InputField("Prénom", "firstName", user.FirstName)
+			@InputField("Nom", "lastName", user.LastName)
+			@InputField("Numéro de téléphone", "phoneNumber", user.PhoneNumber)
+			@InputField("Carte d'identité", "identityCard", user.Cin)
 		</div>
 		<!-- Camping Date Range -->
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label class="text-sm text-gray-700">Date de Debut</label>
-				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableFrom.Format("2006-01-02") }/>
+				<input type="text" class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableFrom.Format("2006-01-02") }/>
 			</div>
 			<div>
 				<label class="text-sm text-gray-700">Date de Fin</label>
-				<input type="text" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableTo.Format("2006-01-02") }/>
+				<input type="text" class="w-full bg-gray-100 px-3 py-2 border rounded-md" value={ camp.AvailableTo.Format("2006-01-02") }/>
 			</div>
 		</div>
 		<!-- Number of Guests -->

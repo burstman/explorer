@@ -52,11 +52,11 @@ func HandleSignupCreate(kit *kit.Kit) error {
 		return kit.Render(SignupForm(values, errors))
 	}
 
-	if values.SocialLink != "" && !isValidSocialLink(values.SocialLink) {
+	// if values.SocialLink != "" && !isValidSocialLink(values.SocialLink) {
 
-		errors.Add("socialLink", "invalid social link")
-		return kit.Render(SignupForm(values, errors))
-	}
+	// 	errors.Add("socialLink", "invalid social link")
+	// 	return kit.Render(SignupForm(values, errors))
+	// }
 
 	user, err := createUserFormValues(values)
 	if err != nil {

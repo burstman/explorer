@@ -50,3 +50,10 @@ type StatusOptions struct {
 	PaymentStatuses []string
 	UserStatuses    []string
 }
+
+type BookingFormValues struct {
+	FirstName          string `form:"firstName"`
+	LastName           string `form:"lastName"`
+	PhoneNumber        string `form:"phoneNumber"`
+	CardIdentityNumber string `form:"cardIdentityNumber"`
+}
