@@ -5,18 +5,32 @@ import (
 	"strconv"
 )
 
-templ CarouselConfigModal(images []types.CarouselImage) {
+templ CarouselConfigModal(images []types.CarouselImage, carouselEnabled bool) {
 	<!-- Modal Header -->
 	<div class="flex justify-between items-center mb-4">
 		<h2 class="text-xl font-bold text-green-900">🖼️ Configure Carousel Images</h2>
+	</div>
+	<!-- Enable / Disable Entire Carousel -->
+	<div class="flex items-center gap-2 mb-6">
+		<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+			<input
+				type="checkbox"
+				checked={ carouselEnabled }
+				hx-post="/admin/carousel/toggle"
+				hx-trigger="change"
+				hx-target="#modal-content"
+				hx-swap="innerHTML"
+				class="w-4 h-4 accent-green-700 cursor-pointer"
+			/>
+			<span>Enable carousel</span>
+		</label>
 	</div>
 	<!-- Existing Images List -->
 	<ul class="space-y-2 mb-6">
 		for _, img := range images {
 			<li class="border p-3 rounded text-sm text-gray-800 flex justify-between items-center">
-				<p>
-					{ img.URL }
-				</p>
+				<p>{ img.URL }</p>
+				<!-- Delete Button -->
 				<form
 					hx-delete={ "/admin/carousel/" + strconv.Itoa(int(img.ID)) + "/delete" }
 					hx-target="#modal-content"

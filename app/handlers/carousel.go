@@ -19,7 +19,7 @@ func Carousel(kit *kit.Kit) error {
 		return fmt.Errorf("error getting data carousel: %v", err)
 	}
 
-	return kit.Render(carousel.CarouselConfigModal(images))
+	return kit.Render(carousel.CarouselConfigModal(images, true))
 }
 
 func CarouselImageCreate(kit *kit.Kit) error {
@@ -42,7 +42,7 @@ func CarouselImageCreate(kit *kit.Kit) error {
 		return err
 	}
 
-	return kit.Render(carousel.CarouselConfigModal(caroucelImages))
+	return kit.Render(carousel.CarouselConfigModal(caroucelImages, true))
 }
 
 func CaroucelImageDelete(kit *kit.Kit) error {
@@ -72,5 +72,5 @@ func CaroucelImageDelete(kit *kit.Kit) error {
 	}
 
 	// Re-render modal with flash and updated bus list
-	return kit.Render(carousel.CarouselConfigModal(caroucelImages))
+	return kit.Render(carousel.CarouselConfigModal(caroucelImages, true))
 }
