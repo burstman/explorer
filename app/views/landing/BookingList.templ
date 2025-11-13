@@ -1,0 +1,505 @@
+package landing
+
+import (
+	"explorer/app/types"
+	"fmt"
+	"strconv"
+)
+
+templ BookingListAdmin(users []types.User, statusOption types.StatusOptions) {
+	<section x-data="{ selectedBookings: [] }" class="px-6 py-10 max-w-7xl mx-auto">
+		<!-- Filters -->
+		<form
+			hx-get="/admin/bookings/search"
+			hx-target="#booking-results"
+			hx-swap="innerHTML"
+			class="mb-4 flex flex-wrap gap-3 items-center"
+		>
+			<input
+				type="text"
+				name="q"
+				placeholder="Search..."
+				hx-trigger="keyup changed delay:500ms"
+				class="px-3 py-2 border rounded w-48"
+			/>
+			<select
+				name="payment_status"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
+				<option>All Payment Statuses</option>
+				for _, pstatus:=range statusOption.PaymentStatuses {
+					<option>{ pstatus }</option>
+				}
+			</select>
+			<select
+				name="user_status"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
+				<option>All User Booking Statuses</option>
+				for _, uStatus:=range statusOption.UserStatuses {
+					<option>{ uStatus }</option>
+				}
+			</select>
+			<select
+				name="payment_method"
+				hx-trigger="change"
+				class="px-3 py-2 border rounded"
+			>
+				<option>All Payment Methods</option>
+				<option>cash</option>
+				<option>online</option>
+			</select>
+			<button
+				type="submit"
+				class="bg-blue-600 text-white px-4 py-2 rounded"
+			>
+				Search
+			</button>
+		</form>
+		<!-- Booking Table -->
+		<div class="overflow-x-auto">
+			<table class="min-w-full text-sm text-left text-gray-200">
+				<thead class="bg-gray-800 uppercase text-xs text-gray-400">
+					<tr>
+						<th class="px-4 py-2">
+							<!-- Select All Checkbox -->
+							<input
+								type="checkbox"
+								@change="selectedBookings = $event.target.checked
+									? Array.from(document.querySelectorAll('.row-checkbox')).map(cb => cb.value)
+									: []"
+							/>
+						</th>
+						<th class="px-4 py-2">User ID</th>
+						<th class="px-4 py-2">Customer</th>
+						<th class="px-4 py-2">Camp</th>
+						<th class="px-4 py-2">Guests</th>
+						<th class="px-4 py-2">Booking Status</th>
+						<th class="px-4 py-2">Payment Status</th>
+						<th class="px-4 py-2">Payment Method</th>
+						<th class="px-4 py-2">Actions</th>
+					</tr>
+				</thead>
+				<tbody id="booking-results" class="bg-gray-900 divide-y divide-gray-800">
+					@BookingTableRows(users)
+				</tbody>
+			</table>
+		</div>
+		<!-- Print button only shown when >=1 selected -->
+		<div class="mt-4" x-show="selectedBookings.length > 0" x-transition>
+			<button
+				@click="
+				if (selectedBookings.length > 0) {
+				window.open(`/admin/bookings/print?ids=${selectedBookings.join(',')}`, '_blank')
+				}
+			"
+				class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+			>
+				Print Selected
+			</button>
+		</div>
+		<!-- Add/Edit Guest Form -->
+		<div id="guest-edit-form" class="mt-6"></div>
+	</section>
+}
+
+// In landing/booking_rows.templ
+templ BookingTableRows(users []types.User) {
+	for _, user := range users {
+		if len(user.Bookings) == 0 {
+			<tr>
+				<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
+				<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
+				<td class="px-4 py-2 italic text-gray-400" colspan="5">No bookings</td>
+				<td class="px-4 py-2 text-right">
+					<button
+						@click="modalOpen = true"
+						hx-get={ "/admin/bookings/" + fmt.Sprint(user.ID) + "/new" }
+						hx-target="#modal-content"
+						hx-swap="innerHTML"
+						class="text-green-400 hover:text-green-200"
+					>➕ Add Booking</button>
+				</td>
+			</tr>
+		} else {
+			for _, booking := range user.Bookings {
+				<tr>
+					<td class="px-4 py-2 text-center">
+						<input
+							type="checkbox"
+							class="row-checkbox"
+							value={ fmt.Sprint(booking.UserID) }
+							x-model="selectedBookings"
+						/>
+					</td>
+					<td class="px-4 py-2 font-medium text-white">{ user.ID }</td>
+					<td class="px-4 py-2 text-white">{ user.FirstName } { user.LastName }</td>
+					<td class="px-4 py-2 text-white">{ booking.Camp.Name }</td>
+					<td class="px-4 py-2 text-white">{ len(booking.Guests) }</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span>
+					</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+					</td>
+					<td class="px-4 py-2">
+						<span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
+					</td>
+					<td class="px-4 py-2 space-x-2 text-white">
+						<button
+							@click="modalOpen = true"
+							hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/showDetail" }
+							hx-target="#modal-content"
+							hx-swap="innerHTML"
+							class="hover:text-green-400"
+						>👁</button>
+						<button
+							@click="modalOpen = true"
+							hx-get={ "/admin/bookings/" + fmt.Sprint(booking.ID) + "/edit" }
+							hx-target="#modal-content"
+							hx-swap="innerHTML"
+							class="hover:text-yellow-400"
+						>✏️</button>
+						<button
+							hx-delete={ "/admin/bookings/list/" + fmt.Sprint(booking.ID) }
+							hx-confirm="Are you sure?"
+							hx-target="#booking-results"
+							hx-swap="outerHTML"
+							class="hover:text-red-400"
+						>🗑️</button>
+					</td>
+				</tr>
+			}
+		}
+	}
+}
+
+templ BookingDetailModal(booking types.Bookings) {
+	<div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full space-y-4">
+		<h2 class="text-2xl font-bold text-gray-800 mb-4">Booking Details</h2>
+		<!-- General Info -->
+		<div class="space-y-2 text-sm text-gray-700">
+			<p><strong>Booking ID:</strong> { booking.ID }</p>
+			<p><strong>Customer:</strong> { booking.User.FirstName } { booking.User.LastName } ({ booking.User.Email })</p>
+			<p><strong>Phone:</strong>{ booking.User.PhoneNumber }</p>
+			<p><strong>CIN:</strong>{ booking.User.Cin }</p>
+			//<p><strong>Social Link:</strong>{ booking.User.SocialLink }</p>
+			<p><strong>Camp:</strong> { booking.Camp.Name }</p>
+			<p><strong>Booking Date:</strong> { booking.CreatedAt.Format("2006-01-02 15:04") }</p>
+			<p><strong>Status:</strong> <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">{ booking.Status }</span></p>
+			<p>
+				<strong>Payment:</strong>
+				<span class="bg-green-600 text-white px-2 py-1 rounded text-xs">{ booking.PaymentMethod }</span>
+			</p>
+			<p>
+				<strong>Payment Status:</strong>
+				<span class="ml-2 bg-purple-600 text-white px-2 py-1 rounded text-xs">{ booking.PaymentStatus }</span>
+			</p>
+			<p><strong>Total Price:</strong> { fmt.Sprintf("%.2f", booking.TotalPrice) } TND</p>
+			<p><strong>Special Request:</strong> { booking.SpecialRequest }</p>
+		</div>
+		<!-- Guests -->
+		<div class="mt-4">
+			<h3 class="text-lg font-semibold text-gray-800 mb-2">👤 Guests ({ len(booking.Guests) })</h3>
+			<ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+				for _, g := range booking.Guests {
+					if g.CIN!="" {
+						<li>{ g.FirstName } { g.LastName } - CIN: { g.CIN } </li>
+					} else {
+						<li>{ g.FirstName } { g.LastName }</li>
+					}
+				}
+			</ul>
+		</div>
+		<!-- Services -->
+		if len(booking.Services) > 0 {
+			<div class="mt-4">
+				<h3 class="text-lg font-semibold text-gray-800 mb-2">🛠️ Services</h3>
+				<ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+					for _, bs := range booking.Services {
+						<li>{ bs.Service.Name } × { bs.Quantity } → { fmt.Sprintf("%.2f", bs.Service.Price*float64(bs.Quantity)) } TND</li>
+					}
+				</ul>
+			</div>
+		}
+		<!-- Close Button -->
+		<div class="text-right pt-4">
+			<button
+				@click="modalOpen = false"
+				class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+			>Close</button>
+		</div>
+	</div>
+}
+
+templ EditBookingModal(
+	booking types.Bookings,
+	camps []types.CampSite,
+	AvailableServices []types.Service,
+) {
+	// Prepare camp prices map
+	{{ campPrices := map[string]float64{} }}
+	{{for _, camp := range camps {
+	campPrices[strconv.Itoa(camp.ID)] = camp.Price
+}
+	}}
+	// Prepare service prices and quantities
+	{{ servicesMap := map[string]float64{} }}
+	{{ serviceQuantity := map[string]int{} }}
+	{{for _, s := range AvailableServices {
+	servicesMap[strconv.Itoa(int(s.ID))] = s.Price
+}
+	}}
+	{{for _, bs := range booking.Services {
+	serviceQuantity[strconv.Itoa(int(bs.ServiceID))] = bs.Quantity
+}
+	}}
+	// Prepare initial guests array
+	{{ initialGuests := []map[string]string{} }}
+	{{for _, g := range booking.Guests {
+	initialGuests = append(initialGuests, map[string]string{
+		"first_name": g.FirstName,
+		"last_name":  g.LastName,
+		"cin":        g.CIN,
+	})
+}
+	}}
+	// Alpine.js data model
+	{{data := map[string]interface{}{
+	"guestCount":   len(initialGuests),
+	"guests":       initialGuests,
+	"services":     serviceQuantity,
+	"servicesData": servicesMap,
+	"selectedCamp": strconv.Itoa(booking.Camp.ID),
+	"campPrices":   campPrices,
+}
+	}}
+	<div
+		x-data={ templ.JSONString(data) }
+		x-init={ `
+			$watch('guestCount', value => {
+				if (value > guests.length) {
+					for (let i = guests.length; i < value; i++) {
+						guests.push({ first_name: '', last_name: '', cin: '' });
+					}
+				} else if (value < guests.length) {
+					guests.splice(value);
+				}
+			});
+
+			total = () => {
+				let servicesTotal = 0;
+				for (const id in services) {
+					servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+				}
+				const campPrice = campPrices[selectedCamp] || 0;
+				const guestsCount = parseInt(guestCount) || 0;
+				const totalCamp = (1 + guestsCount) * campPrice;
+				return (totalCamp + servicesTotal).toFixed(2);
+			};
+		` }
+		class="p-6 bg-white rounded-md shadow-md"
+	>
+		<form method="post" action={ fmt.Sprintf("/admin/bookings/%d/edit", booking.ID) } class="space-y-6">
+			<h2 class="text-xl font-bold mb-4">Admin Edit Booking</h2>
+			<div class="overflow-y-auto max-h-[70vh] pr-2 space-y-6">
+				<!-- Camp Dropdown -->
+				<label for="camp_id" class="block mb-1">Select Camp</label>
+				<select name="camp_id" class="border p-2 rounded w-full" x-model="selectedCamp">
+					<option disabled>Select a campsite</option>
+					for _, camp := range camps {
+						<option value={ camp.ID } selected={ camp.ID == booking.Camp.ID }>
+							{ camp.Name } - { camp.Location }
+						</option>
+					}
+				</select>
+				<!-- Hidden inputs -->
+				<input type="hidden" name="userID" value={ strconv.Itoa(int(booking.User.ID)) }/>
+				<input type="hidden" name="totalPrice" :value="total()"/>
+				<input type="hidden" name="guestsCount" :value="guestCount"/>
+				<!-- User Info -->
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="text-sm text-gray-600">Prénom</label>
+						<input type="text" value={ booking.User.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+					<div>
+						<label class="text-sm text-gray-600">Nom</label>
+						<input type="text" value={ booking.User.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+				</div>
+				<!-- Guests Info -->
+				@GuestFormFields()
+				<!-- Services -->
+				@AdditionalServices(AvailableServices)
+				<!-- Special Requests -->
+				<div>
+					<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+					<textarea
+						name="specialRequest"
+						id="specialRequest"
+						rows="3"
+						placeholder="User special requests"
+						class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+					>{ booking.SpecialRequest }</textarea>
+				</div>
+				<!-- Status Dropdowns -->
+				@UserAndPaymentStatusDropdown(booking.Status, booking.PaymentStatus)
+				<!-- Total Price -->
+				<div class="text-right mt-4">
+					<label class="block text-sm text-gray-600 mb-1">Total Price</label>
+					<p class="text-2xl font-bold text-green-700">
+						<span x-text="total() + ' TND'"></span>
+					</p>
+				</div>
+				<!-- Submit -->
+				<div>
+					<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
+						💾 Save Changes
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+}
+
+templ BookingAdminCreateModal(user types.User, AvailableServices []types.Service, camps []types.CampSite) {
+	{{ campPrices := map[string]float64{} }}
+	{{for _, camp := range camps {
+	campPrices[strconv.Itoa(camp.ID)] = camp.Price
+}
+	}}
+	{{ servicesMap := map[string]float64{} }}
+	{{ serviceQuantity := map[string]int{} }}
+	{{for _, s := range AvailableServices {
+	servicesMap[strconv.Itoa(int(s.ID))] = s.Price
+	serviceQuantity[strconv.Itoa(int(s.ID))] = 0
+}
+	}}
+	{{data := map[string]interface{}{
+	"guestCount":   0,
+	"guests":       []map[string]string{},
+	"services":     serviceQuantity,
+	"servicesData": servicesMap,
+	"selectedCamp": "",
+	"campPrices":   campPrices,
+}
+	}}
+	<div
+		x-data={ templ.JSONString(data) }
+		x-init={ `
+			$watch('guestCount', value => {
+				if (value > guests.length) {
+					for (let i = guests.length; i < value; i++) {
+						guests.push({ first_name: '', last_name: '', cin: '' });
+					}
+				} else if (value < guests.length) {
+					guests.splice(value);
+				}
+			});
+
+			total = () => {
+				let servicesTotal = 0;
+				for (const id in services) {
+					servicesTotal += (services[id] || 0) * (servicesData[id] || 0);
+				}
+				const campPrice = campPrices[selectedCamp] || 0;
+				const guestsCount = parseInt(guestCount) || 0;
+				const totalCamp = (1 + guestsCount) * campPrice;
+				return (totalCamp + servicesTotal).toFixed(2);
+			};
+		` }
+		class="p-6 bg-white rounded-md shadow-md"
+	>
+		<form method="post" action={ fmt.Sprintf("/admin/bookings/%d/create", user.ID) } class="space-y-6">
+			<h2 class="text-xl font-bold mb-4">Admin Booking</h2>
+			<div class="overflow-y-auto max-h-[70vh] pr-2 space-y-6">
+				<!-- Camp Dropdown -->
+				<label for="camp_id" class="block mb-1">Select Camp</label>
+				@CampDropdown(camps)
+				<!-- Hidden inputs -->
+				<input type="hidden" name="totalPrice" :value="total()"/>
+				<!-- User Info -->
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="text-sm text-gray-600">Prénom</label>
+						<input type="text" value={ user.FirstName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+					<div>
+						<label class="text-sm text-gray-600">Nom</label>
+						<input type="text" value={ user.LastName } readonly class="w-full border rounded px-2 py-1 bg-gray-100"/>
+					</div>
+				</div>
+				<!-- Guests Info -->
+				@GuestFormFields()
+				<!-- Services -->
+				@AdditionalServices(AvailableServices)
+				<!-- Special Requests -->
+				<div>
+					<label for="specialRequest" class="block text-sm font-medium text-gray-700">Special Requests</label>
+					<textarea name="specialRequest" id="specialRequest" rows="3" placeholder="User special requests" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"></textarea>
+				</div>
+				<!-- Total Price Display -->
+				<div class="text-right mt-4">
+					<label class="block text-sm text-gray-600 mb-1">Total Price</label>
+					<p class="text-2xl font-bold text-green-700">
+						<span x-text="total() + ' TND'"></span>
+					</p>
+				</div>
+				<!-- Submit -->
+				<div>
+					<button class="w-full bg-green-700 text-white px-4 py-2 rounded-md" type="submit">
+						➕ Add Booking
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+}
+
+templ CampDropdown(camps []types.CampSite) {
+	<select
+		name="camp_id"
+		x-model="selectedCamp"
+		class="border p-2 rounded w-full"
+		required
+	>
+		<option disabled value="">Select a campsite</option>
+		for _, camp := range camps {
+			<option value={ camp.ID }>{ camp.Name } - { camp.Location }</option>
+		}
+	</select>
+}
+
+templ UserAndPaymentStatusDropdown(userSelected string, paymentSelected string) {
+	<div class="flex space-x-4">
+		<div class="flex-1">
+			<label for="user_status" class="block mb-1">User Status</label>
+			<select
+				name="user_status"
+				id="user_status"
+				class="border p-2 rounded w-full"
+			>
+				<option value="booked" selected={ userSelected == "booked" }>Booked</option>
+				<option value="not booked" selected={ userSelected == "not booked" }>Not Booked</option>
+				<option value="canceled" selected={ userSelected == "canceled" }>Canceled</option>
+				<option value="complete" selected={ userSelected == "completed" }>Completed</option>
+			</select>
+		</div>
+		<div class="flex-1">
+			<label for="payment_status" class="block mb-1">Payment Status</label>
+			<select
+				name="payment_status"
+				id="payment_status"
+				class="border p-2 rounded w-full"
+			>
+				<option value="pending" selected={ paymentSelected == "pending" }>Pending</option>
+				<option value="paid" selected={ paymentSelected == "paid" }>Paid</option>
+				<option value="refunded" selected={ paymentSelected == "refunded" }>Refunded</option>
+				<option value="failed" selected={ paymentSelected == "failed" }>Failed</option>
+			</select>
+		</div>
+	</div>
+}

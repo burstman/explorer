@@ -1,0 +1,281 @@
+package auth
+
+import (
+	"explorer/app/views/layouts"
+	v "github.com/anthdm/superkit/validate"
+)
+
+type LoginIndexPageData struct {
+	FormValues   LoginFormValues
+	FormErrors   v.Errors
+	FlashMessage string
+}
+
+type LoginFormValues struct {
+	Email    string `form:"email"`
+	Password string `form:"password"`
+}
+
+templ LoginIndex(data LoginIndexPageData) {
+	@layouts.BaseLayout() {
+		<section class="relative min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+			//<section class="relative h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1512253965851-b72114c0f7dd?auto=format&fit=crop&w=2000&q=80')">
+			//<section class="relative h-screen bg-red-500">
+			<!-- Overlay -->
+			<div class="absolute inset-0 bg-black/60"></div>
+			<!-- Centered Login Card -->
+			<div class="relative z-10 flex justify-center px-4 pt-20">
+				<div class="w-full max-w-md  bg-white/90 border border-white/10 rounded-2xl p-8 shadow-lg flex flex-col gap-8">
+					<h2 class="text-center text-2xl font-semibold text-black">Login to Explorer</h2>
+					@LoginForm(data.FormValues, data.FormErrors)
+					<a
+						class="text-sm text-center underline text-black/70 hover:text-green-700 transition duration-200"
+						hx-get="/signup"
+						hx-target="#main-content"
+						hx-swap="innerHTML"
+					>
+						Don't have an account? Signup here.
+					</a>
+					<a
+						class="text-sm text-center underline text-black/70 hover:text-green-700 transition duration-200"
+						hx-get="/forgotPass"
+						hx-target="#main-content"
+						hx-swap="innerHTML"
+					>
+						Forgot your password?
+					</a>
+				</div>
+			</div>
+			<div
+				x-data="{ show: true }"
+				x-init="setTimeout(() => show = false, 4000)"
+				x-show="show"
+				x-transition
+				class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 text-white px-4 py-3 rounded shadow-lg bg-red-600"
+			>
+				<div class="flex justify-between items-center gap-4">
+					<span>{ data.FlashMessage }</span>
+					<button @click="show = false" class="text-white font-bold">✕</button>
+				</div>
+			</div>
+		</section>
+	}
+}
+
+templ LoginForm(values LoginFormValues, errors v.Errors) {
+	<form hx-post="/login" class="flex flex-col gap-5">
+		<!-- Email Field -->
+		<div class="flex flex-col gap-2">
+			<label for="email" class="text-sm text-black">Email *</label>
+			<input
+				{ inputAttrs(errors.Has("email"))... }
+				name="email"
+				id="email"
+				value={ values.Email }
+				class="bg-white/10 border border-white/20 text-black px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+			/>
+			if errors.Has("email") {
+				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
+			}
+		</div>
+		<!-- Password Field with Eye Toggle -->
+		<div class="flex flex-col gap-2" x-data="{ show: false }">
+			<label for="password" class="text-sm text-black">Password *</label>
+			<!-- Relative wrapper for icon positioning -->
+			<div class="relative">
+				<input
+					{ inputAttrs(errors.Has("password"))... }
+					:type="show ? 'text' : 'password'"
+					name="password"
+					id="password"
+					class="w-full bg-white/10 border border-white/20 text-black px-4 py-2 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+					placeholder="Enter your password"
+				/>
+				<!-- Eye icon button -->
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-green-600 focus:outline-none"
+					tabindex="-1"
+				>
+					<!-- Show icon -->
+					<svg x-show="!show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+						></path>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+						></path>
+					</svg>
+					<!-- Hide icon -->
+					<svg x-show="show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.048-3.362M9.88 9.88A3 3 0 0114.12 14.12M9.88 9.88L4.22 4.22m9.9 9.9l5.66 5.66M15 12a3 3 0 00-3-3"
+						></path>
+					</svg>
+				</button>
+			</div>
+			<!-- Error messages -->
+			if errors.Has("provider") {
+				<ul class="list-disc ml-4">
+					for _, err := range errors.Get("provider") {
+						<li class="text-red-500 text-xs">provider { err }</li>
+					}
+				</ul>
+			}
+			if errors.Has("password") {
+				<ul class="list-disc ml-4">
+					for _, err := range errors.Get("password") {
+						<li class="text-red-500 text-xs">password { err }</li>
+					}
+				</ul>
+			}
+			if errors.Has("credentials") {
+				<div class="text-red-500 text-xs">{ errors.Get("credentials")[0] }</div>
+			}
+			if errors.Has("verified") {
+				<div class="text-red-500 text-xs">{ errors.Get("verified")[0] }</div>
+			}
+		</div>
+		<!-- Submit Button -->
+		<button
+			{ buttonAttrs()... }
+			class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition"
+		>
+			Login
+		</button>
+		<!-- Divider -->
+		<div class="flex items-center justify-center gap-2 text-gray-400 text-sm my-2">
+			<div class="flex-1 h-px bg-gray-300"></div>
+			<span>or</span>
+			<div class="flex-1 h-px bg-gray-300"></div>
+		</div>
+		<!-- Social Login Buttons -->
+		<div class="flex flex-col gap-3">
+			<!-- Google Button -->
+			<a
+				href="/auth/google/"
+				class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 hover:bg-gray-100 transition"
+			>
+				<img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" class="w-5 h-5"/>
+				<span class="text-sm font-medium text-gray-700">Continue with Google</span>
+			</a>
+			<!-- Facebook Button -->
+			<a
+				href="/auth/facebook/"
+				class="flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 bg-[#1877F2] hover:bg-[#166fe5] text-white transition"
+			>
+				<img src="https://www.svgrepo.com/show/452196/facebook-1.svg" alt="Facebook" class="w-5 h-5 bg-white rounded-full p-0.5"/>
+				<span class="text-sm font-medium">Continue with Facebook</span>
+			</a>
+		</div>
+	</form>
+}
+
+func buttonAttrs() templ.Attributes {
+	class := "inline-flex text-primary-foreground items-center justify-center px-4 py-2 font-medium text-sm tracking-wide transition-colors duration-200 rounded-md bg-primary text-foreground hover:bg-primary/90 focus:ring focus:ring-primary focus:shadow-outline focus:outline-none"
+	return templ.Attributes{
+		"class": class,
+	}
+}
+
+func inputAttrs(hasError bool) templ.Attributes {
+	class := "flex w-full px-3 py-2 bg-transparent text-sm border rounded-md ring-offset-background placeholder:text-neutral-500 focus:border-neutral-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+	if hasError {
+		class += " border-red-500"
+	} else {
+		class += " border-input"
+	}
+	return templ.Attributes{
+		"class": class,
+	}
+}
+
+templ ForgotPasswordPage(formErrors map[string]string, formValues map[string]string) {
+	@layouts.BaseLayout() {
+		<section class="min-h-screen flex items-center justify-center bg-gray-100">
+			<div class="w-full max-w-md bg-white rounded-2xl p-8 shadow-lg flex flex-col gap-6">
+				<h2 class="text-center text-2xl font-semibold">Forgot Password</h2>
+				<form
+					hx-post="/forgotPass"
+					hx-target="#main-content"
+					hx-swap="innerHTML"
+					class="flex flex-col gap-4"
+				>
+					<input
+						type="email"
+						name="email"
+						placeholder="Enter your email"
+						value={ formValues["email"] }
+						class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+						required
+					/>
+					if formErrors["email"] != "" {
+						<p class="text-red-500 text-sm">{ formErrors["email"] }</p>
+					}
+					<button
+						type="submit"
+						class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+					>
+						Send Reset Link
+					</button>
+				</form>
+				<a
+					hx-get="/login"
+					hx-target="#main-content"
+					hx-swap="innerHTML"
+					class="text-sm text-center underline text-black/70 hover:text-green-700 transition"
+				>
+					Back to Login
+				</a>
+			</div>
+		</section>
+	}
+}
+
+templ ResetPasswordPage(token string, formErrors map[string]string) {
+	<section class="min-h-screen flex items-center justify-center bg-gray-100">
+		<div class="w-full max-w-md bg-white rounded-2xl p-8 shadow-lg flex flex-col gap-6">
+			<h2 class="text-center text-2xl font-semibold">Reset Password</h2>
+			<form
+				hx-post={ "/resetPass?token=" + token }
+				hx-target="#main-content"
+				hx-swap="innerHTML"
+				class="flex flex-col gap-4"
+			>
+				<input
+					type="password"
+					name="password"
+					placeholder="New password"
+					class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+					required
+				/>
+				<input
+					type="password"
+					name="confirm_password"
+					placeholder="Confirm password"
+					class="w-full border rounded-lg p-2 focus:ring focus:outline-none"
+					required
+				/>
+				if formErrors["password"] != "" {
+					<p class="text-red-500 text-sm">{ formErrors["password"] }</p>
+				}
+				<button
+					type="submit"
+					class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+				>
+					Reset Password
+				</button>
+			</form>
+		</div>
+	</section>
+}

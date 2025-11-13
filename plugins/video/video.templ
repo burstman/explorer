@@ -1,0 +1,48 @@
+package video
+
+templ VideoConfigModal(videoURL string, videoEnabled bool) {
+	<div class="relative">
+		<!-- Modal Header -->
+		<div class="flex justify-between items-center mb-4">
+			<h2 class="text-xl font-bold text-green-900">🎬 Set Landing Page Video</h2>
+		</div>
+		<!-- Video URL Form -->
+		<form
+			action="/admin/landing/video/save"
+			method="POST"
+			class="space-y-3"
+		>
+			<label class="block text-sm text-gray-700">Video URL (YouTube or MP4)</label>
+			<input
+				type="text"
+				name="video_url"
+				value={ videoURL }
+				placeholder="Enter video URL"
+				class="w-full border rounded p-2 text-sm"
+			/>
+			if videoEnabled {
+				<label>
+					<input type="checkbox" name="video_enabled" checked/> Enable video
+				</label>
+			} else {
+				<label>
+					<input type="checkbox" name="video_enabled"/> Enable video
+				</label>
+			}
+			<button
+				type="submit"
+				class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-700"
+			>
+				💾 Save Video
+			</button>
+		</form>
+		<!-- Close Modal -->
+		<button
+			type="button"
+			@click="$dispatch('close-modal')"
+			class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-lg font-bold p-1 min-w-[24px] min-h-[24px] flex items-center justify-center"
+		>
+			✖
+		</button>
+	</div>
+}

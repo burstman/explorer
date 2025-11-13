@@ -1,0 +1,79 @@
+package landing
+
+import "explorer/app/types"
+
+templ PagePrintBookingSelectedUser(users []types.User) {
+	<html>
+		<head>
+			<title>Booking Print</title>
+			<style>
+				body {
+					font-family: Arial, sans-serif;
+					font-size: 12px;
+					color: #000;
+				}
+				table {
+					width: 100%;
+					border-collapse: collapse;
+					margin-bottom: 1em;
+				}
+				th, td {
+					border: 1px solid #000;
+					padding: 6px 8px;
+					text-align: left;
+				}
+				th {
+					background-color: #eee;
+				}
+				@media print {
+					body * {
+						visibility: visible;
+					}
+					#no-print {
+						display: none;
+					}
+				}
+			</style>
+		</head>
+		<body>
+			<h1>Camping List</h1>
+			<table>
+				<thead>
+					<tr>
+						<th>Prénom</th>
+						<th>Nom</th>
+						<th>CIN</th>
+					</tr>
+				</thead>
+				for _, user := range users {
+					if len(user.Bookings) == 0 {
+						<h2>User: { user.FirstName } { user.LastName } (ID: { user.ID })</h2>
+						<p>No bookings for this user.</p>
+					} else {
+						<tbody>
+							for _, booking := range user.Bookings {
+								<!-- Row for the user -->
+								<tr>
+									<td><strong>{ user.FirstName }</strong></td>
+									<td><strong>{ user.LastName }</strong></td>
+									<td>{ booking.User.Cin }</td>
+								</tr>
+								<!-- Rows for each guest -->
+								if len(booking.Guests) > 0 {
+									for _, guest := range booking.Guests {
+										<tr>
+											<td>{ guest.FirstName }</td>
+											<td>{ guest.LastName }</td>
+											<td>{ guest.CIN }</td>
+										</tr>
+									}
+								}
+							}
+						</tbody>
+					}
+				}
+			</table>
+			<button id="no-print" onclick="window.print()">Print this page</button>
+		</body>
+	</html>
+}

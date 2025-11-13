@@ -1,0 +1,9 @@
+bin
+*_templ.go
+*_templ.txt
+node_modules
+tmp
+.env
+.env_prod
+app_db
+.envx.env_prod

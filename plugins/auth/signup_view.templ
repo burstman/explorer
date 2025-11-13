@@ -1,0 +1,289 @@
+package auth
+
+import (
+	"explorer/app/types"
+	"explorer/app/views/layouts"
+	"fmt"
+	v "github.com/anthdm/superkit/validate"
+)
+
+type SignupIndexPageData struct {
+	FormValues SignupFormValues
+	FormErrors v.Errors
+}
+
+type SignupFormValues struct {
+	Email              string `form:"email"`
+	FirstName          string `form:"firstName"`
+	LastName           string `form:"lastName"`
+	Password           string `form:"password"`
+	PasswordConfirm    string `form:"passwordConfirm"`
+	PhoneNumber        string `form:"phoneNumber"`
+	SocialLink         string `form:"socialLink"`
+	CardIdentityNumber string `form:"cardIdentityNumber"`
+}
+
+templ SignupIndex(data SignupIndexPageData) {
+	@layouts.BaseLayout() {
+		<div x-data="{ termsOpen : false }">
+			<section class="relative min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+				<!-- Optional: dark overlay -->
+				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+				<!-- Centered Signup Card -->
+				<div class="relative z-10 flex justify-center items-center px-4 py-24 min-h-screen">
+					<div class="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-8">
+						<h2 class="text-center text-2xl font-bold text-gray-800">Signup</h2>
+						<div class="mt-6">
+							@SignupForm(data.FormValues, data.FormErrors)
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	}
+}
+
+templ SignupForm(values SignupFormValues, errors v.Errors) {
+	<form hx-post="/signup" class="flex flex-col gap-4">
+		<!-- Email -->
+		<div class="flex flex-col gap-1">
+			<label for="email">Email *</label>
+			<input { inputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }/>
+			if errors.Has("email") {
+				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
+			}
+		</div>
+		<div class="flex gap-4">
+			<!-- First Name -->
+			<div class="flex flex-col gap-1 w-1/2">
+				<label for="firstName">Prénom *</label>
+				<input { inputAttrs(errors.Has("firstName"))... } name="firstName" id="firstName" value={ values.FirstName }/>
+				if errors.Has("firstName") {
+					<ul>
+						for _, err := range errors.Get("firstName") {
+							<li class="text-red-500 text-xs">{ err }</li>
+						}
+					</ul>
+				}
+			</div>
+			<!-- Last Name -->
+			<div class="flex flex-col gap-1 w-1/2">
+				<label for="lastName">Nom *</label>
+				<input { inputAttrs(errors.Has("lastName"))... } name="lastName" id="lastName" value={ values.LastName }/>
+				if errors.Has("lastName") {
+					<ul>
+						for _, err := range errors.Get("lastName") {
+							<li class="text-red-500 text-xs">{ err }</li>
+						}
+					</ul>
+				}
+			</div>
+		</div> <!-- Phone Number -->
+		<div class="flex flex-col gap-1">
+			<label for="phoneNumber">Phone Number</label>
+			<input { inputAttrs(errors.Has("phoneNumber"))... } name="phoneNumber" id="phoneNumber" value={ values.PhoneNumber }/>
+			if errors.Has("phoneNumber") {
+				<div class="text-red-500 text-xs">{ errors.Get("phoneNumber")[0] }</div>
+			}
+		</div>
+		<!-- Social Link -->
+		// <div class="flex flex-col gap-1">
+		// 	<label for="socialLink">Social Link (Facebook or Instagram)</label>
+		// 	<input { inputAttrs(errors.Has("socialLink"))... } name="socialLink" id="socialLink" value={ values.SocialLink }/>
+		// 	if errors.Has("socialLink") {
+		// 		<div class="text-red-500 text-xs">{ errors.Get("socialLink")[0] }</div>
+		// 	}
+		// </div>
+		<!-- Card Identity Number -->
+		<div class="flex flex-col gap-1">
+			<label for="cardIdentityNumber">National ID Number *</label>
+			<input { inputAttrs(errors.Has("cardIdentityNumber"))... } name="cardIdentityNumber" id="cardIdentityNumber" value={ values.CardIdentityNumber }/>
+			if errors.Has("cardIdentityNumber") {
+				<div class="text-red-500 text-xs">{ errors.Get("cardIdentityNumber")[0] }</div>
+			}
+		</div>
+		<!-- Password -->
+		<div class="flex flex-col gap-1">
+			<label for="password">Password *</label>
+			<div x-data="{ show: false }" class="relative">
+				<input
+					{ inputAttrs(errors.Has("password"))... }
+					:type="show ? 'text' : 'password'"
+					name="password"
+					id="password"
+					class="w-full pr-10"
+				/>
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+					tabindex="-1"
+				>
+					<template x-if="!show">
+						<!-- Eye open -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a11.955 11.955 0 0119.928 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+					</template>
+					<template x-if="show">
+						<!-- Eye closed -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223a10.477 10.477 0 0116.04 0M9.88 9.88a3 3 0 104.24 4.24"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0M3 3l18 18"></path>
+						</svg>
+					</template>
+				</button>
+			</div>
+			if errors.Has("password") {
+				<ul>
+					for _, err := range errors.Get("password") {
+						<li class="text-red-500 text-xs">{ err }</li>
+					}
+				</ul>
+			}
+		</div>
+		<!-- Confirm Password -->
+		<div class="flex flex-col gap-1">
+			<label for="passwordConfirm">Confirm Password *</label>
+			<div x-data="{ show: false }" class="relative">
+				<input
+					{ inputAttrs(errors.Has("passwordConfirm"))... }
+					:type="show ? 'text' : 'password'"
+					name="passwordConfirm"
+					id="passwordConfirm"
+					class="w-full pr-10"
+				/>
+				<button
+					type="button"
+					@click="show = !show"
+					class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+					tabindex="-1"
+				>
+					<template x-if="!show">
+						<!-- Eye open -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a11.955 11.955 0 0119.928 0M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+					</template>
+					<template x-if="show">
+						<!-- Eye closed -->
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223a10.477 10.477 0 0116.04 0M9.88 9.88a3 3 0 104.24 4.24"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0M3 3l18 18"></path>
+						</svg>
+					</template>
+				</button>
+			</div>
+			if errors.Has("passwordConfirm") {
+				<div class="text-red-500 text-xs">{ errors.Get("passwordConfirm")[0] }</div>
+			}
+		</div>
+		<!-- Submit -->
+		<button { buttonAttrs()... }>
+			Signup
+		</button>
+		<!-- Switch to login -->
+		<a class="text-sm underline cursor-pointer" hx-get="/login" hx-target="#main-content" hx-swap="innerHTML">
+			Already have an account? Login here.
+		</a>
+		<!-- Agreements -->
+		<div class="space-y-3 text-sm text-gray-700">
+			<label class="flex items-start gap-2 text-sm mt-4">
+				<input type="checkbox" name="agree_terms" required class="mt-1 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"/>
+				<span>
+					I have read and agree to the 
+					<button type="button" @click="termsOpen = true" class="text-green-700 underline hover:text-green-500">Terms and Conditions</button>
+				</span>
+			</label>
+		</div>
+	</form>
+	@terms()
+}
+
+templ ConfirmEmail(user types.User) {
+	<div x-data="resendTimer()" x-init="init()">
+		<form hx-post="/resend-email-verification" class="flex flex-col gap-4 text-sm">
+			<input type="hidden" name="userID" value={ fmt.Sprint(user.ID) }/>
+			<div>
+				An email confirmation link has been sent to: 
+				<span class="underline font-medium">{ user.Email }</span>
+			</div>
+			<!-- Resend button with countdown -->
+			<div class="flex items-center gap-2">
+				<button
+					class="underline font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					:disabled="remaining > 0"
+				>
+					Resend verification code
+				</button>
+				<!-- Show timer if still counting down -->
+				<span x-show="remaining > 0" class="text-gray-600 text-xs">
+					Retry in <span x-text="time().minutes"></span>:<span x-text="time().seconds"></span>
+				</span>
+			</div>
+		</form>
+	</div>
+	<script>
+	function resendTimer() {
+		return {
+			expiry: new Date().getTime() + 60000, // 60s cooldown
+			remaining: null,
+			init() {
+				this.setRemaining()
+				setInterval(() => this.setRemaining(), 1000)
+			},
+			setRemaining() {
+				const diff = this.expiry - new Date().getTime()
+				this.remaining = diff > 0 ? parseInt(diff / 1000) : 0
+			},
+			minutes() {
+				return parseInt(this.remaining / 60)
+			},
+			seconds() {
+				return this.remaining % 60
+			},
+			format(value) {
+				return ("0" + value).slice(-2)
+			},
+			time() {
+				return {
+					minutes: this.format(this.minutes()),
+					seconds: this.format(this.seconds())
+				}
+			}
+		}
+	}
+</script>
+}
+
+templ terms() {
+	<!-- Modal backdrop -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 bg-black/50 z-40"
+		@click="termsOpen = false"
+	></div>
+	<!-- Modal content -->
+	<div
+		x-show="termsOpen"
+		x-transition
+		class="fixed inset-0 flex items-center justify-center z-50"
+		style="backdrop-filter: blur(2px);"
+	>
+		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
+			<button @click="termsOpen = false" class="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-lg font-bold">✖</button>
+			<h2 class="text-xl font-bold mb-4">Terms and Conditions</h2>
+			<div class="text-sm max-h-[60vh] overflow-y-auto space-y-3 text-gray-700">
+				<p><strong>1. Booking Policy:</strong> All reservations are subject to availability. Full payment is required at the time of booking.</p>
+				<p><strong>2. Cancellations:</strong> Cancellations made 48 hours before the check-in date will receive a full refund. No refunds for cancellations after this period.</p>
+				<p><strong>3. Check-in & Check-out:</strong> Standard check-in is at 2 PM and check-out is at 11 AM. Early check-in must be selected and paid for in advance.</p>
+				<p><strong>4. Liability:</strong> We are not responsible for personal injuries, lost or stolen items, or damages to personal property during your stay.</p>
+				<p><strong>5. Code of Conduct:</strong> Guests must respect the campsite, nature, and fellow guests. Any disruptive behavior may result in immediate eviction without a refund.</p>
+				<p><strong>6. Services:</strong> Additional services (equipment rental, guided tours, firewood, early check-in) must be booked in advance and are non-refundable once the stay begins.</p>
+				<p><strong>7. Weather Disclaimer:</strong> Outdoor conditions are subject to change. No refunds for weather-related changes unless the campsite is deemed unsafe by management.</p>
+				<p><strong>8. Agreement:</strong> By submitting the booking form, you acknowledge that you have read, understood, and agreed to these terms.</p>
+			</div>
+		</div>
+	</div>
+}

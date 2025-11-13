@@ -1,0 +1,143 @@
+package landing
+
+import (
+	"explorer/app/types"
+	"fmt"
+	"strings"
+)
+
+templ Index(successFlashes, failFlashes []string, carouselImages []types.CarouselImage,
+	carouselConfig types.CarouselConfig, videoConfig types.LandingVideo) {
+	<div>
+		<section class="relative min-h-screen">
+			<!-- Background -->
+			<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=2000&q=80')">
+				<div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+			</div>
+			<!-- Centered Content -->
+			<div class="relative z-10 w-full flex flex-col items-center justify-center px-6 py-16 space-y-12">
+				<!-- Headline & Text -->
+				<div class="text-center max-w-3xl">
+					<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+						Découvrez les grands espaces
+					</h1>
+					<p class="text-white/80 text-lg md:text-xl mb-8">
+						Vivez le grand air. Découvrez des sites de camping à couper le souffle à travers le pays.
+						Reconnectez-vous avec la nature et créez des souvenirs inoubliables.
+					</p>
+				</div>
+				<!-- Carousel Section -->
+				<div class="w-full max-w-5xl">
+					@CarouselSection(carouselImages, carouselConfig)
+				</div>
+				<!-- Video Section -->
+				<div class="w-full max-w-5xl">
+					@VideoSection(videoConfig)
+				</div>
+			</div>
+		</section>
+		<!-- CTA Section -->
+		<section class="relative py-20">
+			<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=2000&q=80')">
+				<div class="absolute inset-0 bg-green-900/70"></div>
+			</div>
+			<div class="container mx-auto px-6 relative z-10">
+				<div class="max-w-2xl mx-auto text-center">
+					<h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+						Prêt pour votre prochaine aventure ?
+					</h2>
+					<p class="text-white/80 mb-8">
+						Réservez votre séjour en camping dès aujourd'hui et découvrez la beauté de la nature comme jamais auparavant.
+						Réservations anticipées : des réductions spéciales sont disponibles.
+					</p>
+					<div class="flex flex-col sm:flex-row gap-4 justify-center">
+						<a
+							href="/AreaAttraction"
+							class="bg-white text-green-800 px-8 py-3 rounded-lg hover:bg-gray-100 font-medium"
+						>
+							Réserver Maintenant 
+						</a>
+						<a href="#" class="border border-white text-white px-8 py-3 rounded-lg hover:bg-white/10 font-medium">
+							Contactez nous
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- Footer placeholder -->
+		<footer class="bg-gray-800 text-white py-12 px-6">
+			<div class="container mx-auto">
+				<!-- Footer content goes here... -->
+			</div>
+		</footer>
+	</div>
+}
+
+templ CarouselSection(carouselImages []types.CarouselImage, carouselConfig types.CarouselConfig) {
+	if carouselConfig.Enabled {
+		{{ imagesURLs := []string{} }}
+		{{
+						for _, img := range carouselImages {
+							imagesURLs = append(imagesURLs, fmt.Sprintf("'%s'", img.URL))
+						}
+		}}
+		{{ xData := fmt.Sprintf("carousel([%s])", strings.Join(imagesURLs, ", ")) }}
+		<div
+			x-data={ xData }
+			x-init="start()"
+			class="relative mx-auto w-full h-96 overflow-hidden rounded-xl shadow-lg"
+		>
+			<!-- Images -->
+			<img
+				:src="images[currentIndex]"
+				class="w-full h-full object-cover transition duration-700"
+			/>
+			<!-- Indicators -->
+			<div class="absolute bottom-2 left-0 right-0 flex justify-center space-x-1">
+				<template x-for="(image, index) in images" :key="index">
+					<button
+						class="w-2 h-2 rounded-full"
+						:class="index === currentIndex ? 'bg-white' : 'bg-gray-400'"
+						@click="goTo(index)"
+					></button>
+				</template>
+			</div>
+		</div>
+	}
+}
+
+templ VideoSection(videoConfig types.LandingVideo) {
+	if videoConfig.Enabled {
+		<div class="relative mx-auto w-full max-w-5xl h-[500px] my-12 rounded-xl overflow-hidden shadow-lg">
+			<div class="w-full h-full">
+				if strings.Contains(videoConfig.URL, "youtube.com") || strings.Contains(videoConfig.URL, "youtu.be") {
+					<!-- YouTube Embed -->
+					<iframe
+						src={ YouTubeEmbedURL(videoConfig.URL) }
+						title="Landing Page Video"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allowfullscreen
+						class="w-full h-full object-cover rounded-xl"
+					></iframe>
+				} else {
+					<!-- MP4 Video -->
+					<video
+						src={ videoConfig.URL }
+						controls
+						class="w-full h-full object-cover rounded-xl"
+					></video>
+				}
+			</div>
+		</div>
+	}
+}
+
+func YouTubeEmbedURL(url string) string {
+	if strings.Contains(url, "watch?v=") {
+		return strings.Replace(url, "watch?v=", "embed/", 1)
+	} else if strings.Contains(url, "youtu.be/") {
+		return strings.Replace(url, "youtu.be/", "youtube.com/embed/", 1)
+	}
+	return url
+}
